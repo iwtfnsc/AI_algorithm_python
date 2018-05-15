@@ -1,0 +1,137 @@
+
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import os
+import numpy as np
+from numpy import poly1d
+
+add=("D://traningset//houses.txt")
+
+
+
+def lms(maxLoop, epsilon,rate,x,y):
+    global theta,row,errors,thetas
+    row,col=x.shape
+    aaa=0
+    alldone=0
+    errors=[]
+    bbbb=epsilon
+    theta=np.zeros((col,1))#把theta设置为一列，行数取决于Ｘ的Ｍ列
+    thetas={}
+    for j in range(col):
+        thetas[j]=[theta[j,0]]
+    while(maxLoop):
+        maxLoop=maxLoop-1
+        if(alldone):
+            break
+#        print('this is thetas :',theta)
+#        print('this is x:',x)
+#        print('this isy :',y)
+##        print('this is theta:',theta)
+##################正规方程组########################
+#        theta=np.linalg.inv(x.T*x)*x.T*y
+
+#        print('this is norm :',theta)
+        for i in range(col):
+            x1=x[:,i]#取Ｘ的两列中的一列
+            y1=y#取Ｙ，Ｙ本来就是４８行２列中的一列
+            theta=theta#这个数是２行*一列
+            aaa=x1[0,:]
+#            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
+            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
+            theta[i,:]=theta[i,:]+deriv #把求得的theta值不断的更新
+            thetas[i].append(theta[i,0])
+            
+#            print('this is x*theta :',x*theta)
+#            print('this is h deriv :',h(theta,x1))
+#            print('this is h deriv2 :',rate*((y1-x*theta).T*x1)/(2*row))
+#            print('this is h y1-x*theta :',x*theta)
+#            print('this is ((y1-x*theta).T*x1) :',rate*((y1-x*theta).T*x1)/row)
+#            print('this is theta[i,:] :',theta[i,:])
+#            print('this is error1 :', (y-x*theta).T*(y-x*theta))
+#            print('this is theta :', theta)
+        error=(y-x*theta).T*(y-x*theta)/(2*row)#这个ＯＫ,
+#        abc=error(0)
+        errors.append(error[0,0]/100000)
+#        print('this is errors :',errors)
+#        print('error:',np.sum(np.power((y-x*theta),2)) /(2*row) )#这个ＯＫ
+#        errors=[-1]=error[0,0]
+        if(np.max(thetas[1])>epsilon):
+            alldone=1
+            print(theta,thetas)
+    return  theta, thetas
+
+#print('this is 1:',row,col)
+#print('this is 2:',y.shape,y)
+# hx=theta0*x0+theta1*x1+theta2*x2   计算点积
+def h(theta,x):
+    r1,c2=theta.shape
+    hx=0
+#    hx=np.dot(theta,x)
+    for i in range(r1):
+        hx=theta[i,:]*x[i,:]+hx
+#        print('1',theta[i,:],x[i,:])
+    return hx
+#theta must be matrix ,x is too
+
+def j(theta,x,y):
+    a,b=x.shape
+    return ( y-x*theta).T*( y-x*theta)/(2*a)
+
+#lms(maxLoop, epsilon,rate,x,y):
+x,y=filepro(add)#文件处理，把矩阵处理成自己想要的   
+#a,b=lms(55,22,0.0000000000000001,x,y)
+
+#lms(400,100,0.00000000001,x,y)
+#lms(400,100,0.0000000001,x,y)
+#lms(400,100,0.000000001,x,y)
+#lms(46,0.2,0.00000001,x,y)
+lms(12,0.19,0.0000001,x,y)#
+#lms(40,0.2,0.000001,x,y)
+#lms(400,100,0.00001,x,y)
+#lms(400,100,0.0001,x,y)
+#lms(400,100,0.001,x,y)
+#lms(400,100,0.01,x,y)
+
+
+#print('this is xxx :',a)
+#print('this is theta :',b)
+#for i in range(1,5):
+#    print(i)
+#yy=np.sum(np.power((y-x*theta),2)) /(2*row)
+#xxxx1=np.linspace(x[:,1].min(),x[:,1].max()).T
+#xxxx2=np.linspace(x[:,0].min(),x[:,0].max()).T
+xxxx1=x[:,0].reshape(-1,1).T
+xxxx2=x[:,1].reshape(-1,1).T
+cc,dd=xxxx1.shape
+yyy=(x*theta).reshape(-1,1)#yy=最终猜的价格
+#yyy=(x*theta).reshape(-1,1)
+xxxxx=np.arange(0,dd,1)
+
+#x1=np.arange(1,5001,1)
+#print(x1)
+#plt.scatter(x1,y.T,marker='o',color='b',label='1',s=30) #Ｙ原始数据
+#plt.plot(x1,x1**2,'r--')
+
+#plt.scatter(xxxxx,xxxx1,marker='x',color='g',label='1',s=30)#x第一列原始数据
+#plt.scatter(xxxxx,xxxx2,marker='o',color='b',label='1',s=30)#Ｘ第二列原始数据
+plt.scatter(xxxxx,y.T,marker='o',color='b',label='1',s=30) #Ｙ原始数据
+#plt.scatter(xxxxx,(x*theta).T,marker='o',color='r',label='1',s=30) #拟和后检测Ｙ数据
+#xyz=np.arange(400,4160,40).reshape(-1,2)
+#bbcc=np.dot(xyz,theta)
+plt.xlim(0,50)
+plt.ylim(0,800000)
+#plt.plot(xxxxx,bbcc,'m--')
+plt.plot(xxxxx,yyy,'r--')
+plt.title('linear regression')
+#plt.text(30,700000,'scatter is out data')
+#plt.text(30,650000,'curve is guess data')
+
+
+#plt.plot(xxxxx,errors,'m--')
+#print('1:',xxxxx)
+#print('2:',yyy)
+#print('2:',yy)
+#abc=np.random.random(8).reshape(2,4)
+print('thetas1:',thetas[0])
+print('thetas2:',thetas[1])
+#print('abc',abc[0,3])
