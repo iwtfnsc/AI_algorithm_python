@@ -31,8 +31,10 @@ def filepro(filename):
         curLine = line.strip().split('\t')#去掉数据中头和尾的空格
 #        print(curLine)
         for i in range(numFeat):#
-            lineArr.append(float(curLine[i]))#每个数组里面去掉最后一个
-        
+            lineArr.append(float(curLine[i]))
+       　　 #每个数组里面的数加到Ｘ里，唯有最后一个加到Ｙ里面组成
+            #是因为NUMFEAT是－１列的数，所以历不完，还剩下一个输出Ｙ
+            
         X.append(lineArr)
         y.append(float(curLine[-1]))
 #    print('x is value is:',np.mat(X))
