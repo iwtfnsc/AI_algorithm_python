@@ -5,6 +5,14 @@ Created on Tue May 15 21:58:34 2018
 @author: Administrator
 """
 
+'''
+线性回归的核心是最小二乘：有两种方法实现
+１，（Ｘ-Ｙ)^2 =误差　　把所有数据特征值的误差相加，然后对单个特征值求偏导数，最后得出来的是这个误差最小值
+２，Ｘ=ＩＮＶ(Ａ.Ｔ　Ａ)Ａ.ＴＢ，通过正规方程组来求解
+
+'''
+
+
 ##################this is my first AI learn#######################
 #-*- coding: utf-8 -*-
 import matplotlib.pyplot as plt#显示２Ｄ画图
