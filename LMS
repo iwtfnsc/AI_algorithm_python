@@ -1,23 +1,69 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 15 21:58:34 2018
 
+@author: Administrator
+"""
+
+##################this is my first AI learn#######################
+#-*- coding: utf-8 -*-
 import matplotlib.pyplot as plt#显示２Ｄ画图
 import os
 import numpy as np
 from numpy import poly1d
-
+#coding: utf-8
 add=("D://traningset//houses.txt")
 
 
+###########文本文件读取后，进行处理成我们想要的数据##################
+def filepro(filename):
+    """ 读取数据
+        filename 文件名
+      返回，Ｘ１,Ｘ２特征向量Ｘ,Ｙ为输出结果
+        X 训练样本集矩阵
+        y 标签集矩阵
+    """
+#open(filename).readline()=打开文件，整行的数据
+#numfeat是3列数据中减去结果y那列得到的结果
+#    lineArr = []
+    numFeat = len(open(filename).readline().split('\t')) - 1
+    X = []
+    y = []
+#    print(open(filename).readline() )
+    file = open(filename)
+    for line in file.readlines():#列出每一行
+        lineArr = []#必须要重新来付值
+        
+        curLine = line.strip().split('\t')#去掉数据中　头和尾的空格
+#        print(curLine)
+        for i in range(numFeat):#
+            lineArr.append(float(curLine[i]))#每个数组里面去掉最后一个
+        
+        X.append(lineArr)
+        y.append(float(curLine[-1]))
+#    print('x is value is:',np.mat(X))
+##    print('y is value is:',np.mat(y).T)    
+    return np.mat(X), np.mat(y).T
+#把Ｘ转换成矩阵，把Ｙ转置，变成向量Ｙ
 
+##########################线性回归###########################
 def lms(maxLoop, epsilon,rate,x,y):
-    global theta,row,errors,thetas
+#    global theta,row,errors,thetas
     row,col=x.shape
     aaa=0
     alldone=0
     errors=[]
     bbbb=epsilon
-    theta=np.zeros((col,1))#把theta设置为一列，行数取决于Ｘ的Ｍ列
+    theta=np.zeros((col+1,1))#把theta设置为一列，行数取决于Ｘ的Ｍ列
     thetas={}
-    for j in range(col):
+    a=np.ones(row).reshape(row,1)
+    x=np.column_stack((a,x))
+#    y=y/100
+    
+    x471=np.ones(row).reshape(row,-1)
+#    print(a)
+#    np.colum_stack((a,b))
+    for j in range(col+1):
         thetas[j]=[theta[j,0]]
     while(maxLoop):
         maxLoop=maxLoop-1
@@ -27,21 +73,38 @@ def lms(maxLoop, epsilon,rate,x,y):
 #        print('this is x:',x)
 #        print('this isy :',y)
 ##        print('this is theta:',theta)
-##################正规方程组########################
+##################正规方程组可以直接得到结果########################
 #        theta=np.linalg.inv(x.T*x)*x.T*y
-
 #        print('this is norm :',theta)
-        for i in range(col):
-            x1=x[:,i]#取Ｘ的两列中的一列
+#        print('col',col)
+        for i in range(col+1):
+            x1=x[:,i]#取Ｘ的3列中的一列
             y1=y#取Ｙ，Ｙ本来就是４８行２列中的一列
-            theta=theta#这个数是２行*一列
-            aaa=x1[0,:]
+            theta=theta#这个数是3行*一列
+#            print('x1.shape',x1.shape)
+#            print('y1.shape',y1.shape)
+#            print('theta.shape',theta.shape)
+#            
+#            print('x.shape',x.shape)
+#            print('y.shape',y.shape)
+                  
+            
+            
+            
+            if(i==0):
+                deriv=rate*((y1-x*theta).T*x471)/row#对Ｊtheta求导数
+#                pass
+            else:
+                deriv=rate*(((y1-x*theta).T*x1)/row)#对Ｊtheta求导数
+#                pass
+#            print('deriv',deriv.shape)
+#            print('theta[i,:]',theta[i,:])
 #            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
-            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
+#            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
             theta[i,:]=theta[i,:]+deriv #把求得的theta值不断的更新
             thetas[i].append(theta[i,0])
-            
-#            print('this is x*theta :',x*theta)
+#            print('x471',x471)    
+#            print('this is thetas :',thetas)
 #            print('this is h deriv :',h(theta,x1))
 #            print('this is h deriv2 :',rate*((y1-x*theta).T*x1)/(2*row))
 #            print('this is h y1-x*theta :',x*theta)
@@ -51,87 +114,84 @@ def lms(maxLoop, epsilon,rate,x,y):
 #            print('this is theta :', theta)
         error=(y-x*theta).T*(y-x*theta)/(2*row)#这个ＯＫ,
 #        abc=error(0)
-        errors.append(error[0,0]/100000)
+        errors.append(error[0,0]/100000)#o
 #        print('this is errors :',errors)
 #        print('error:',np.sum(np.power((y-x*theta),2)) /(2*row) )#这个ＯＫ
 #        errors=[-1]=error[0,0]
-        if(np.max(thetas[1])>epsilon):
-            alldone=1
-            print(theta,thetas)
-    return  theta, thetas
+#        if(np.max(thetas[1])>epsilon):
+#            alldone=1
+#        print('thetas:',thetas)
+    return  theta, thetas,x
 
-#print('this is 1:',row,col)
-#print('this is 2:',y.shape,y)
-# hx=theta0*x0+theta1*x1+theta2*x2   计算点积
-def h(theta,x):
-    r1,c2=theta.shape
-    hx=0
-#    hx=np.dot(theta,x)
-    for i in range(r1):
-        hx=theta[i,:]*x[i,:]+hx
-#        print('1',theta[i,:],x[i,:])
-    return hx
-#theta must be matrix ,x is too
 
-def j(theta,x,y):
-    a,b=x.shape
-    return ( y-x*theta).T*( y-x*theta)/(2*a)
 
-#lms(maxLoop, epsilon,rate,x,y):
+number1=5
+#number1=int(input("enter number=:"))
+
+
 x,y=filepro(add)#文件处理，把矩阵处理成自己想要的   
+row,col=x.shape
+#a=np.ones(row).reshape(row,1)
+#x=np.column_stack((a,x))
 #a,b=lms(55,22,0.0000000000000001,x,y)
 
-#lms(400,100,0.00000000001,x,y)
-#lms(400,100,0.0000000001,x,y)
-#lms(400,100,0.000000001,x,y)
-#lms(46,0.2,0.00000001,x,y)
-lms(12,0.19,0.0000001,x,y)#
-#lms(40,0.2,0.000001,x,y)
-#lms(400,100,0.00001,x,y)
-#lms(400,100,0.0001,x,y)
-#lms(400,100,0.001,x,y)
-#lms(400,100,0.01,x,y)
+#t1,t0,x12=lms(400,100,0.00000000001,x,y)
+#t1,t0,x12=lms(400,100,0.0000000001,x,y)
+#t1,t0,x12=lms(40,100,0.000000001,x,y)
+#t1,t0,x12=lms(88,0.2,0.00000001,x,y)
+t1,t0,x12=lms(number1,0.19,0.0000001,x,y)#
+#t1,t0,x12=lms(1,0.2,0.000001,x,y)
+#t1,t0,x12=lms(40,100,0.00001,x,y)
+#t1,t0,x12=lms(4,100,0.0001,x,y)
+#t1,t0,x12=lms(40,100,0.001,x,y)
+#t1,t0,x12=lms(4,100,0.1,x,y)
+
+##############################################################
+#xx0=x[:,0].reshape(-1,1).T
+#xx1=x[:,1].reshape(-1,1).T
+#xx2=x[:,1].reshape(-1,1).T
+#cc,dd=xx0.shape
+#yyy=(x12*t1).reshape(-1,1)#yy=最终猜的价格
+#print('theta',t1)
+#print('thetas',t0)
+#ddd=np.arange(0,dd,1)
+#plt.scatter(ddd,x12*t1,marker="o",color='m',label='12',s=54) #Ｙ原始数据
+#plt.plot(ddd,yyy,'b--')
 
 
-#print('this is xxx :',a)
-#print('this is theta :',b)
-#for i in range(1,5):
-#    print(i)
-#yy=np.sum(np.power((y-x*theta),2)) /(2*row)
-#xxxx1=np.linspace(x[:,1].min(),x[:,1].max()).T
-#xxxx2=np.linspace(x[:,0].min(),x[:,0].max()).T
-xxxx1=x[:,0].reshape(-1,1).T
-xxxx2=x[:,1].reshape(-1,1).T
-cc,dd=xxxx1.shape
-yyy=(x*theta).reshape(-1,1)#yy=最终猜的价格
-#yyy=(x*theta).reshape(-1,1)
-xxxxx=np.arange(0,dd,1)
 
-#x1=np.arange(1,5001,1)
-#print(x1)
-#plt.scatter(x1,y.T,marker='o',color='b',label='1',s=30) #Ｙ原始数据
-#plt.plot(x1,x1**2,'r--')
+###########################线性拟合图###################################
+xx0=x[:,0].reshape(-1,1).T
+xx1=x[:,1].reshape(-1,1).T
+row1,col1=x.shape
+jtheta=[]
+thetarow1=t1[1,:]
+thetarow2=t1[2,:]
+#print('44',thetarow1,thetarow2)
 
-#plt.scatter(xxxxx,xxxx1,marker='x',color='g',label='1',s=30)#x第一列原始数据
-#plt.scatter(xxxxx,xxxx2,marker='o',color='b',label='1',s=30)#Ｘ第二列原始数据
-plt.scatter(xxxxx,y.T,marker='o',color='b',label='1',s=30) #Ｙ原始数据
-#plt.scatter(xxxxx,(x*theta).T,marker='o',color='r',label='1',s=30) #拟和后检测Ｙ数据
-#xyz=np.arange(400,4160,40).reshape(-1,2)
-#bbcc=np.dot(xyz,theta)
-plt.xlim(0,50)
-plt.ylim(0,800000)
-#plt.plot(xxxxx,bbcc,'m--')
-plt.plot(xxxxx,yyy,'r--')
-plt.title('linear regression')
-#plt.text(30,700000,'scatter is out data')
-#plt.text(30,650000,'curve is guess data')
+#xrow=x[i,:]#2*1
+#print('rr',xrow[:,0])
 
 
-#plt.plot(xxxxx,errors,'m--')
-#print('1:',xxxxx)
-#print('2:',yyy)
-#print('2:',yy)
-#abc=np.random.random(8).reshape(2,4)
-print('thetas1:',thetas[0])
-print('thetas2:',thetas[1])
-#print('abc',abc[0,3])
+for i in range(row1):
+#    pass
+    xrow=x[i,:]#2*1
+#    print(xrow())
+    jtheta.append((xrow[:,0]*thetarow1+xrow[:,1]*thetarow2)[0,0])
+
+#print('jtheta',jtheta)
+jtheta=np.array(jtheta).reshape(-1,1).T
+
+#cc,dd=x.shape
+#yyy=(x12*t1).reshape(-1,1)#yy=最终猜的价格
+print('theta',t1)
+print('xx0',xx0.shape)
+print('jtheta',jtheta.shape)
+jtheta=jtheta
+
+plt.scatter(xx0.tolist(),y.T.tolist(),marker="o",color='g',label='12',s=31) #Ｙ原始数据
+plt.scatter(xx0.tolist(),jtheta.tolist(),marker="o",color='r',label='12',s=11) #Ｙ原始数据
+plt.title('this is linear regeression dot pic')
+plt.xlabel('house feature ')
+plt.ylabel('house price')
+plt.show()
