@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat May 26 10:46:30 2018
+局部加权回归（非参数算法）：
+logical regression
+公式formila　∑　wi*(yi-theta.T*xi)**2
+权重函数　wi=exp(-((xi-x)**2/(2*(tao**2)))　　tao是波长函数
+如果(xi-x)**2很小，wi＝１
+如果(xi-x)**2很大，wi＝０
+此算法不适应大型的数据，因为每次拟合时，都要历完所有的数据。
+
+@author: Administrator
+"""
+
+##################this is my first AI learn#######################
+#-*- coding: utf-8 -*-
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import os
+import numpy as np
+from numpy import poly1d
+#coding: utf-8
+add=("D://traningset//houses.txt")
+
+
+###########文本文件读取后，进行处理成我们想要的数据##################
+def filepro(filename):
+    """ 读取数据
+        filename 文件名
+      返回，Ｘ１,Ｘ２特征向量Ｘ,Ｙ为输出结果
+        X 训练样本集矩阵
+        y 标签集矩阵
+    """
+#open(filename).readline()=打开文件，整行的数据
+#numfeat是3列数据中减去结果y那列得到的结果
+#    lineArr = []
+    numFeat = len(open(filename).readline().split('\t')) - 1
+    X = []
+    y = []
+#    print(open(filename).readline() )
+    file = open(filename)
+    for line in file.readlines():#列出每一行
+        lineArr = []#必须要重新来付值
+        
+        curLine = line.strip().split('\t')#去掉数据中　头和尾的空格
+#        print(curLine)
+        for i in range(numFeat):#
+            lineArr.append(float(curLine[i]))#每个数组里面去掉最后一个
+        
+        X.append(lineArr)
+        y.append(float(curLine[-1]))
+    print('x is value is:',np.mat(X))
+    print('y is value is:',np.mat(y).T)    
+    return np.mat(X), np.mat(y).T
+#把Ｘ转换成矩阵，把Ｙ转置，变成向量Ｙ
+
+'''
+fill_m是一个填空函数，主要对矩阵的左边进行填充，同时生成一个theta，这个矩阵
+和Ｘ是一样的shape,大小　　Ｘ是需要处理的矩阵，ＣＯＬＳＨＵ是增加的列数
+'''
+def add_left_col(x,colshu):
+    row,col=x.shape
+    b=x
+    col1=np.ones(row).reshape(-1,1)
+    for i in range(colshu):
+        b=np.column_stack((col1,b))
+    col1=b    
+    a,b=col1.shape
+    theta=np.zeros(a*b).reshape(a,b)
+    print(col1,theta)
+    return col1,theta
+
+
+
+x,y=filepro(add)
+x,theta=add_left_col(x,1)
