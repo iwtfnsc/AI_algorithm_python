@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt#显示２Ｄ画图
 import os
 import numpy as np
 from numpy import poly1d
+import math as ma
 #coding: utf-8
 add=("D://traningset//houses.txt")
 
@@ -48,8 +49,8 @@ def filepro(filename):
         
         X.append(lineArr)
         y.append(float(curLine[-1]))
-    print('x is value is:',np.mat(X))
-    print('y is value is:',np.mat(y).T)    
+#    print('x is value is:',np.mat(X))
+#    print('y is value is:',np.mat(y).T)    
     return np.mat(X), np.mat(y).T
 #把Ｘ转换成矩阵，把Ｙ转置，变成向量Ｙ
 
@@ -65,11 +66,81 @@ def add_left_col(x,colshu):
         b=np.column_stack((col1,b))
     col1=b    
     a,b=col1.shape
-    theta=np.zeros(a*b).reshape(a,b)
-    print(col1,theta)
+    theta=np.zeros(b).reshape(b,-1)
+#    print(col1,theta)
     return col1,theta
+
+
+
+#logical regression
+
+def logical_regression(x,y,tao,theta,xset):
+    row,col=x.shape
+    alldone=0
+    maxLoop=row
+    thetas={}
+    errors=[]
+#    theta=np.zeros(col).reshape(col,-1)
+    x471=np.ones(row).reshape(row,-1)
+    print('x471',x471.shape)
+    for j in range(col):
+        thetas[j]=[theta[j,0]]
+    while(maxLoop):
+        maxLoop=maxLoop-1
+        if(alldone):
+            break
+        for i in range(col):
+            x1=x[:,i]#取Ｘ的3列中的一列
+            y1=y#取Ｙ，Ｙ本来就是４８行２列中的一列
+            theta=theta#这个数是3行*一列
+            print('x1',x1.shape)
+            print('x',x.shape)
+            print('y1',y1.shape)
+            print('theta',theta.shape)
+            for j in range(row):
+                #这里ＷＩ的权重，每一个数都要历遍
+                wi=ma.exp(-((x1[j,:]-xset)**2/(2*tao**2)))
+#                print('this is x',x1[j,:])
+                if(i==0):
+                    deriv=wi*((y1-x*theta).T*x471)/row#对Ｊtheta求导数
+                else:
+                    deriv=wi*(((y1-x*theta).T*x1)/row)#对Ｊtheta求导数
+
+            print('this is deriv :',deriv)    
+            theta[i,:]=theta[i,:]+deriv #把求得的theta值不断的更新
+            thetas[i].append(theta[i,0])
+#            print('x471',x471)    
+#            print('this is thetas :',thetas)
+        error=(y-x*theta).T*(y-x*theta)/(2*row)#这个ＯＫ,
+        errors.append(error[0,0]/100000)#o
+    return  theta, thetas,x
+
 
 
 
 x,y=filepro(add)
 x,theta=add_left_col(x,1)
+logical_regression(x,y,2,theta,23)#logical_regression(x,y,tao,theta,xset)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
