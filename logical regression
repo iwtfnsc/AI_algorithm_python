@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Sat May 26 10:46:30 2018
@@ -22,7 +23,43 @@ import math as ma
 #coding: utf-8
 add=("D://traningset//houses.txt")
 
-
+def gaussian_kernel(x, x0, c, a=1.0):  
+    """ 
+    Gaussian kernel. 
+ 
+    :Parameters: 
+      - `x`: nearby datapoint we are looking at. 
+      - `x0`: data point we are trying to estimate. 
+      - `c`, `a`: kernel parameters. 
+    """  
+    # Euclidian distance  x=x[i] xi=x[i]=固定的　  
+    diff = x - x0  
+    dot_product = diff * diff.T  #diff的平方
+    return a * np.exp(dot_product / (-2.0 * c**2))  #ＷＩ权重
+  
+  
+def get_weights(training_inputs, datapoint, c):  
+    """ 
+    Function that calculates weight matrix for a given data point and training 
+    data. 
+ 
+    :Parameters: 
+      - `training_inputs`: training data set the weights should be assigned to. 
+      - `datapoint`: data point we are trying to predict. 
+      - `c`: kernel function parameter 
+ 
+    :Returns: 
+      NxN weight matrix, there N is the size of the `training_inputs`. 
+    """  
+#    x = np.mat(training_inputs)  
+    x = training_inputs   
+    n_rows = x.shape[0]  
+    # Create diagonal weight matrix from identity matrix  
+    weights = np.mat(np.eye(n_rows))  #建立一个多少行的单位矩阵，初始化权重
+    for i in range(n_rows):  
+        weights[i, i] = gaussian_kernel(datapoint, x[i], c)  
+  #矩阵的对角线上放权重
+    return weights  
 ###########文本文件读取后，进行处理成我们想要的数据##################
 def filepro(filename):
     """ 读取数据
@@ -74,38 +111,51 @@ def add_left_col(x,colshu):
 
 #logical regression
 
-def logical_regression(x,y,tao,theta,xset):
+def logical_regression(x,y,tao,theta,datapoint):
     row,col=x.shape
     alldone=0
     maxLoop=row
+    maxLoop=1
     thetas={}
     errors=[]
+    wi=get_weights(x,datapoint,tao)
 #    theta=np.zeros(col).reshape(col,-1)
     x471=np.ones(row).reshape(row,-1)
-    print('x471',x471.shape)
+#    print('x471',x471.shape)
     for j in range(col):
         thetas[j]=[theta[j,0]]
     while(maxLoop):
         maxLoop=maxLoop-1
+        
         if(alldone):
             break
         for i in range(col):
             x1=x[:,i]#取Ｘ的3列中的一列
             y1=y#取Ｙ，Ｙ本来就是４８行２列中的一列
-            theta=theta#这个数是3行*一列
-            print('x1',x1.shape)
-            print('x',x.shape)
-            print('y1',y1.shape)
-            print('theta',theta.shape)
-            for j in range(row):
-                #这里ＷＩ的权重，每一个数都要历遍
-                wi=ma.exp(-((x1[j,:]-xset)**2/(2*tao**2)))
-#                print('this is x',x1[j,:])
-                if(i==0):
-                    deriv=wi*((y1-x*theta).T*x471)/row#对Ｊtheta求导数
-                else:
-                    deriv=wi*(((y1-x*theta).T*x1)/row)#对Ｊtheta求导数
-
+#            theta=theta#这个数是3行*一列
+#            print('x1',x1.shape)
+#            print('y1',y1.shape)
+            print('wi',wi)
+#            print('theta',theta.shape)
+#            print('x',x.shape)
+#            print('wi_col',wi[:,1])
+            if(i==0):
+                
+                #此处需要研究
+#                for j in range(row):
+#                    wi_col=wi[:,j]
+#                    #x1=47,1  y1=47,1  x=47,3  wicol=47,1   wi=47,47
+                deriv =  (wi*(y1-x*theta)).T*x471/row#对Ｊtheta求导数
+#                    deriv=deriv/row
+            else:
+                
+#                for j in range(row):
+#                    wi_col=wi[:,j]
+##                    deriv=(wi_col*((y1-x*theta).T*x471))/row#对Ｊtheta求导数
+#                deriv=deriv+(wi_col*((y1-x*theta).T*x1))#对Ｊtheta求导数
+                deriv =  (wi*(y1-x*theta)).T*x1/row#对Ｊtheta求导数
+#                    deriv=deriv/row
+                
             print('this is deriv :',deriv)    
             theta[i,:]=theta[i,:]+deriv #把求得的theta值不断的更新
             thetas[i].append(theta[i,0])
@@ -120,7 +170,77 @@ def logical_regression(x,y,tao,theta,xset):
 
 x,y=filepro(add)
 x,theta=add_left_col(x,1)
-logical_regression(x,y,2,theta,23)#logical_regression(x,y,tao,theta,xset)
+#print(x,y)
+#print(get_weights(x,x[0],1))
+#print('x is shape',x.shape)
+#print('y is shape',y.shape)
+#print('theta is shape',theta.shape)
+#print('theta is ',theta)
+aaa=x.shape[0]
+print(aaa)
+for i in range(1):
+    
+    a,b,c=logical_regression(x,y,0.1,theta,x[i])#logical_regression(x,y,tao,theta,,datapoint):
+#    print('x[i] is :',x[i])
+#    print('theta is :',a)
+
+##
+#print('theta:',a)
+#print('thetas:',b)
+#print('x:',c)
+
+
+t1=a
+print(a)
+###########################线性拟合图###################################
+xx0=x[:,1].reshape(-1,1).T
+xx1=x[:,2].reshape(-1,1).T
+row1,col1=x.shape
+jtheta=[]
+thetarow1=t1[1,:]
+thetarow2=t1[2,:]
+#print('44',thetarow1,thetarow2)
+t1=x*t1
+#xrow=x[i,:]#2*1
+#print('rr',xrow[:,0])
+
+
+#for i in range(row1):
+##    pass
+#    xrow=x[i,:]#2*1
+##    print(xrow())
+#    jtheta.append((xrow[:,1]*thetarow1+xrow[:,2]*thetarow2)[0,0])
+jtheta=t1
+#print('jtheta',jtheta)
+jtheta=np.array(jtheta).reshape(-1,1).T
+
+#cc,dd=x.shape
+#yyy=(x12*t1).reshape(-1,1)#yy=最终猜的价格
+print('theta is:',t1)
+print('xx0 .shape:',xx0.shape)
+print('jtheta.shape',jtheta.shape)
+#jtheta=jtheta
+
+plt.scatter(xx0.tolist(),y.T.tolist(),marker="o",color='b',label='12',s=31) #Ｙ原始数据
+plt.scatter(xx0.tolist(),jtheta.tolist(),marker="o",color='m',label='12',s=11) #Ｙ原始数据
+plt.title('this is linear regeression dot pic')
+plt.xlabel('house feature ')
+plt.ylabel('house price')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
