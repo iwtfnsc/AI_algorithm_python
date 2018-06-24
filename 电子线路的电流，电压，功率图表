@@ -1,51 +1,92 @@
 #功率WATT图 电阻变化时功率
-#v=3.3
-#r=np.arange(1,2,0.01)
-#def f1(x):
-#    return x/r*x#电流X电压＝功率
-#def f2(x):
-#    return x**2/r#电压的平方/电阻＝功率
-#def f3(x):
-#    return (x/r)**2*r#电流的平方X电阻＝功率
-#plt.plot(r,f1(v),'b-')
-##plt.plot(r,f2(v),'m-')
-##plt.plot(r,f3(v),'r-')
-#plt.xlabel('R')
-#plt.ylabel('watt')
-#plt.legend('w')
-#plt.title('watt with the R change ')
-#plt.grid()
+lable=('v=3.3','v1=5','v2=4')
+v=3.3
+v1=5
+v2=4
+r=np.arange(1,2,0.01)
+def f1(x):
+    return x/r*x#电流X电压＝功率
+def f2(x):
+    return x**2/r#电压的平方/电阻＝功率
+def f3(x):
+    return (x/r)**2*r#电流的平方X电阻＝功率
+plt.plot(r,f1(v),'b-')
+plt.plot(r,f1(v1),'m-')
+plt.plot(r,f1(v2),'r-')
+plt.xlabel('R')
+plt.ylabel('watt')
+plt.legend(lable)
+plt.title('watt with the R change ')
+plt.grid()
 
 
 #电流图
-#r=3.3
-#v=np.arange(5,12,0.05)
-#def f1(r):
-#    return v/r#电流X电压＝功率
-#
-#plt.plot(v,f1(r),'r-')
-#plt.xlabel('voltage')
-#plt.ylabel('current')
-#plt.legend('current')
-#plt.title('current with the voltage change ')
-#plt.grid()
+r=3.3
+v=np.arange(5,12,0.05)
+def f1(r):
+    return v/r#电流X电压＝功率
+
+plt.plot(v,f1(r),'r-')
+plt.xlabel('voltage')
+plt.ylabel('current')
+plt.legend('current')
+plt.title('current with the voltage change ')
+plt.grid()
 
 
 
 #  电压变化时功率
-#r=5
-#v=np.arange(5,12,0.001)
-#def f1(r):
-#    return v/r*v#电流X电压＝功率
-#def f2(x):
-#    return v**2/r#电压的平方/电阻＝功率
-#def f3(x):
-#    return (v/r)**2*r#电流的平方X电阻＝功率
-#plt.plot(v,f1(r),'b-')
+lable=('R','R2','R3')
+r=5
+r2=10
+r3=22
+v=np.arange(5,12,0.001)
+def f1(r):
+    return v/r*v#电流X电压＝功率
+def f2(x):
+    return v**2/r#电压的平方/电阻＝功率
+def f3(x):
+    return (v/r)**2*r#电流的平方X电阻＝功率
+plt.plot(v,f1(r),'b-')
+plt.plot(v,f1(r2),'m-')
+plt.plot(v,f1(r3),'r-')
+plt.xlabel('voltage')
+plt.ylabel('watt')
+plt.legend(lable)
+plt.title('watt with the voltage change ')
+plt.grid()
+
+
+
+
+
+#  电阻分压时电压变化
+v=9.8
+
+rdown=np.arange(1,30,0.1).reshape(1,-1)
+col=rdown.shape[1]
+rup=[10]*col
+rup1=[20]*col
+rup2=[1]*col
+rup=np.array(rup).reshape(1,-1)
+print(rup,rdown)
+def f1(rup):
+    return v*(rdown/(rdown+rup))
+
+def f2(rup1):
+    return v*(rdown/(rdown+rup))
+
+def f3(rup2):
+    return v*(rdown/(rdown+rup))
+
+plt.plot(rdown.tolist()[0],f1(rup).tolist()[0],'b-')
+plt.plot(rdown.tolist()[0],f1(rup1).tolist()[0],'r-')
+plt.plot(rdown.tolist()[0],f1(rup2).tolist()[0],'m-')
 #plt.plot(v,f2(r),'m-')
 #plt.plot(v,f3(r),'r-')
-#plt.xlabel('voltage')
-#plt.ylabel('watt')
-#plt.legend('w')
-#plt.title('watt with the voltage change ')
-#plt.grid()
+lable=('Rup','Rup1','Rup2')
+plt.xlabel('R down')
+plt.ylabel('v-out')
+plt.legend(lable)
+plt.title('voltage with the rdown change ')
+plt.grid()
