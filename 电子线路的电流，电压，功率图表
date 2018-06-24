@@ -1,0 +1,51 @@
+#功率WATT图 电阻变化时功率
+#v=3.3
+#r=np.arange(1,2,0.01)
+#def f1(x):
+#    return x/r*x#电流X电压＝功率
+#def f2(x):
+#    return x**2/r#电压的平方/电阻＝功率
+#def f3(x):
+#    return (x/r)**2*r#电流的平方X电阻＝功率
+#plt.plot(r,f1(v),'b-')
+##plt.plot(r,f2(v),'m-')
+##plt.plot(r,f3(v),'r-')
+#plt.xlabel('R')
+#plt.ylabel('watt')
+#plt.legend('w')
+#plt.title('watt with the R change ')
+#plt.grid()
+
+
+#电流图
+#r=3.3
+#v=np.arange(5,12,0.05)
+#def f1(r):
+#    return v/r#电流X电压＝功率
+#
+#plt.plot(v,f1(r),'r-')
+#plt.xlabel('voltage')
+#plt.ylabel('current')
+#plt.legend('current')
+#plt.title('current with the voltage change ')
+#plt.grid()
+
+
+
+#  电压变化时功率
+#r=5
+#v=np.arange(5,12,0.001)
+#def f1(r):
+#    return v/r*v#电流X电压＝功率
+#def f2(x):
+#    return v**2/r#电压的平方/电阻＝功率
+#def f3(x):
+#    return (v/r)**2*r#电流的平方X电阻＝功率
+#plt.plot(v,f1(r),'b-')
+#plt.plot(v,f2(r),'m-')
+#plt.plot(v,f3(r),'r-')
+#plt.xlabel('voltage')
+#plt.ylabel('watt')
+#plt.legend('w')
+#plt.title('watt with the voltage change ')
+#plt.grid()
