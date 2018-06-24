@@ -197,8 +197,9 @@ print('xx0',xx0.shape)
 print('jtheta',jtheta.shape)
 jtheta=jtheta
 
-plt.scatter(xx0.tolist(),y.T.tolist(),marker="o",color='g',label='12',s=31) #Ｙ原始数据
-plt.scatter(xx0.tolist(),jtheta.tolist(),marker="o",color='r',label='12',s=11) #Ｙ原始数据
+plt.scatter(xx0.tolist()[0],y.T.tolist()[0],marker="o",color='g',label='12',s=31) #Ｙ原始数据
+#plt.scatter(xx0.tolist(),jtheta.tolist(),marker="o",color='r',label='12',s=11) #Ｙ原始数据
+plt.plot(xx1.tolist()[0],jtheta.tolist()[0],'r-')#拟合THETA后的数据
 plt.title('this is linear regeression dot pic')
 plt.xlabel('house feature ')
 plt.ylabel('house price')
