@@ -5,14 +5,6 @@ Created on Tue May 15 21:58:34 2018
 @author: Administrator
 """
 
-'''
-线性回归的核心是最小二乘：有两种方法实现
-１，（Ｘ-Ｙ)^2 =误差　　把所有数据特征值的误差相加，然后对单个特征值求偏导数，最后得出来的是这个误差最小值
-２，Ｘ=ＩＮＶ(Ａ.Ｔ　Ａ)Ａ.ＴＢ，通过正规方程组来求解
-
-'''
-
-
 ##################this is my first AI learn#######################
 #-*- coding: utf-8 -*-
 import matplotlib.pyplot as plt#显示２Ｄ画图
@@ -22,7 +14,11 @@ from numpy import poly1d
 #coding: utf-8
 add=("D://traningset//houses.txt")
 
-
+def jtheta(theta,x,y):
+    row=x.shape[0]
+    a=(y-x*theta).T*(y-x*theta)/2/row
+    return a
+    
 ###########文本文件读取后，进行处理成我们想要的数据##################
 def filepro(filename):
     """ 读取数据
@@ -64,26 +60,24 @@ def lms(maxLoop, epsilon,rate,x,y):
     bbbb=epsilon
     theta=np.zeros((col+1,1))#把theta设置为一列，行数取决于Ｘ的Ｍ列
     thetas={}
+    thetas1=[1]
+    test1=0
     a=np.ones(row).reshape(row,1)
     x=np.column_stack((a,x))
 #    y=y/100
     
     x471=np.ones(row).reshape(row,-1)
-#    print(a)
-#    np.colum_stack((a,b))
     for j in range(col+1):
         thetas[j]=[theta[j,0]]
+#        thetas1[j]=[theta[j,0]]
     while(maxLoop):
         maxLoop=maxLoop-1
         if(alldone):
             break
-#        print('this is thetas :',theta)
-#        print('this is x:',x)
-#        print('this isy :',y)
-##        print('this is theta:',theta)
+
 ##################正规方程组可以直接得到结果########################
 #        theta=np.linalg.inv(x.T*x)*x.T*y
-#        print('this is norm :',theta)
+#        print('this is norm :',np.linalg.inv(x.T*x)*x.T*y)
 #        print('col',col)
         for i in range(col+1):
             x1=x[:,i]#取Ｘ的3列中的一列
@@ -95,49 +89,82 @@ def lms(maxLoop, epsilon,rate,x,y):
 #            
 #            print('x.shape',x.shape)
 #            print('y.shape',y.shape)
-                  
-            
-            
-            
+
             if(i==0):
                 deriv=rate*((y1-x*theta).T*x471)/row#对Ｊtheta求导数
 #                pass
             else:
                 deriv=rate*(((y1-x*theta).T*x1)/row)#对Ｊtheta求导数
 #                pass
-#            print('deriv',deriv.shape)
+#            print('deriv',deriv)
 #            print('theta[i,:]',theta[i,:])
 #            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
 #            deriv=rate*((y1-x*theta).T*x1)/row#对Ｊtheta求导数
             theta[i,:]=theta[i,:]+deriv #把求得的theta值不断的更新
             thetas[i].append(theta[i,0])
-#            print('x471',x471)    
-#            print('this is thetas :',thetas)
-#            print('this is h deriv :',h(theta,x1))
-#            print('this is h deriv2 :',rate*((y1-x*theta).T*x1)/(2*row))
-#            print('this is h y1-x*theta :',x*theta)
-#            print('this is ((y1-x*theta).T*x1) :',rate*((y1-x*theta).T*x1)/row)
-#            print('this is theta[i,:] :',theta[i,:])
-#            print('this is error1 :', (y-x*theta).T*(y-x*theta))
-#            print('this is theta :', theta)
+#            jtheta(theta,x,y)
+            thetas1.append(jtheta(theta,x,y)[0].tolist())
         error=(y-x*theta).T*(y-x*theta)/(2*row)#这个ＯＫ,
+        ##下面是在什么时候收敛值，当J THETA的值最小时，变化变慢，每次相差很小，这里设定的是70
+        if(((test1-error)<70)&(test1>0)):
+            alldone=1
+        else:
+            test1=error
+        
 #        abc=error(0)
-        errors.append(error[0,0]/100000)#o
-#        print('this is errors :',errors)
-#        print('error:',np.sum(np.power((y-x*theta),2)) /(2*row) )#这个ＯＫ
-#        errors=[-1]=error[0,0]
-#        if(np.max(thetas[1])>epsilon):
-#            alldone=1
-#        print('thetas:',thetas)
-    return  theta, thetas,x
+        errors.append(error[0,0])#o
+#    print('thetas',thetas)
+    return  theta, thetas,thetas1,x,errors
 
 
 
-number1=5
+number1=144
 #number1=int(input("enter number=:"))
 
 
 x,y=filepro(add)#文件处理，把矩阵处理成自己想要的   
+
+#print('max x 0',np.max(x[:,0]))
+#print('min x 0',np.min(x[:,0]))
+#print('mean x 0',np.mean(x[:,0]))
+'''
+第一种
+(xi-u)/(max(xi)-min(xi))
+第二种
+X/X(MAX))
+特征值的缩放
+'''
+#第一种
+#x[:,0]=(x[:,0]-np.mean(x[:,0]))/(np.max(x[:,0])-np.min(x[:,0]))
+#x[:,1]=(x[:,1]-np.mean(x[:,1]))/(np.max(x[:,1])-np.min(x[:,1]))
+#y=(y-np.mean(y))/(np.max(y)-np.min(y))
+#第二种
+#x[:,0]=x[:,0]/np.max(x[:,0])#  size/max(size)处理特征值
+#x[:,1]=x[:,1]/np.max(x[:,1])#  size/max(size)处理特征值
+#y=y/np.max(y)#  size/max(size)处理特征值
+
+#print('max x and y',np.max(x[:,0]),np.max(x[:,1]))
+
+
+#print('y',y)
+
+
+#q1=x[:,0].T.tolist()
+#q2=x[:,1].T.tolist()
+
+q1=x[:,0]
+q2=x[:,1]
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#u = np.linspace(-1, 1, 47)
+#x11, y22 = np.meshgrid(u, u)
+##z = x11**2+y22**2
+#z =
+##plt.xlabel=('theta1')
+#ax.contourf(x11, y22, z)
+#plt.show()
+
+
 row,col=x.shape
 #a=np.ones(row).reshape(row,1)
 #x=np.column_stack((a,x))
@@ -147,7 +174,7 @@ row,col=x.shape
 #t1,t0,x12=lms(400,100,0.0000000001,x,y)
 #t1,t0,x12=lms(40,100,0.000000001,x,y)
 #t1,t0,x12=lms(88,0.2,0.00000001,x,y)
-t1,t0,x12=lms(number1,0.19,0.0000001,x,y)#
+t1,t0,x12 ,xxx,errors=lms(number1,0.19,0.0000001,x,y)#
 #t1,t0,x12=lms(1,0.2,0.000001,x,y)
 #t1,t0,x12=lms(40,100,0.00001,x,y)
 #t1,t0,x12=lms(4,100,0.0001,x,y)
@@ -165,42 +192,88 @@ t1,t0,x12=lms(number1,0.19,0.0000001,x,y)#
 #ddd=np.arange(0,dd,1)
 #plt.scatter(ddd,x12*t1,marker="o",color='m',label='12',s=54) #Ｙ原始数据
 #plt.plot(ddd,yyy,'b--')
-
-
-
+#thetas1=t0[1]
+#thetas2=t0[2]
+#del thetas1[0]
+#del thetas2[0]
+#print('thetas1',thetas1)
+#print('thetas2',thetas2)
+print('errors',errors)
+x=xxx
+#at=x12.tolist()
+#print('thetas1:',at)
 ###########################线性拟合图###################################
 xx0=x[:,0].reshape(-1,1).T
 xx1=x[:,1].reshape(-1,1).T
+xx2=x[:,2].reshape(-1,1).T
 row1,col1=x.shape
 jtheta=[]
+thetarow0=t1[0,:]
 thetarow1=t1[1,:]
 thetarow2=t1[2,:]
 #print('44',thetarow1,thetarow2)
 
 #xrow=x[i,:]#2*1
 #print('rr',xrow[:,0])
-
-
+#print('x',xxx)
+x=xxx
+xx=np.arange(1,4800,100).reshape(1,-1)
+mx=np.max(xx)/4800
+#print('xx.',xx)
 for i in range(row1):
 #    pass
-    xrow=x[i,:]#2*1
-#    print(xrow())
-    jtheta.append((xrow[:,0]*thetarow1+xrow[:,1]*thetarow2)[0,0])
+    xrow=x[i,:]#第 I 行,下面公式是 X*THETA＝H(THETA))=THETA0*X0+THETA1*X1+THETA2*X2
+#    print(xrow())   XROW的第0列     XROW的第一列……………………XROW的
+    jtheta.append(thetarow0*xrow[:,0]+thetarow1*xrow[:,1]+thetarow2*xrow[:,2])
 
 #print('jtheta',jtheta)
 jtheta=np.array(jtheta).reshape(-1,1).T
+ 
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#u = np.linspace(-1, 1, 47)
+#x11, y22 = np.meshgrid(u, u)
+##z = x11**2+y22**2
+#z =jtheta.tolist()
+##plt.xlabel=('theta1')
+#ax.contourf(x11, y22, z)
+#plt.show()
 
 #cc,dd=x.shape
 #yyy=(x12*t1).reshape(-1,1)#yy=最终猜的价格
-print('theta',t1)
-print('xx0',xx0.shape)
-print('jtheta',jtheta.shape)
-jtheta=jtheta
+t0=np.array(t0).reshape(-1,1).T
+t0.tolist()
+#print('thetas',t0)
+#print('xx0',xx0.shape)
+#print('jtheta',jtheta.shape)
+#jtheta=jtheta
+#a=np.arange(1,1000,1)
+#t0.tolist()
+#plt.plot(a,t0)
+bb=xx0.tolist()
+'''
+下面是回归线图
 
-plt.scatter(xx0.tolist()[0],y.T.tolist()[0],marker="o",color='g',label='12',s=31) #Ｙ原始数据
-#plt.scatter(xx0.tolist(),jtheta.tolist(),marker="o",color='r',label='12',s=11) #Ｙ原始数据
-plt.plot(xx1.tolist()[0],jtheta.tolist()[0],'r-')#拟合THETA后的数据
-plt.title('this is linear regeression dot pic')
+'''
+fxx=[np.min(jtheta),np.max(jtheta)]
+#print('y.shape',y.shape)
+#print('xx1.shape',xx1.shape)
+#print('xx1',xx1.tolist())
+#print('jtheta.shape',jtheta.shape)
+#print('y.',y)
+#print('theta.',t1)
+#
+#print('jtheta.',jtheta)
+#print('xx.shape',xx.shape)
+
+plt.plot(xx1.tolist()[0],y.T.tolist()[0],'b+')
+plt.plot(xx1.tolist()[0],jtheta.tolist()[0],'r-')
+
+plt.title('this is linear regeression dot')
 plt.xlabel('house feature ')
 plt.ylabel('house price')
+plt.grid(1)
 plt.show()
+#
+
+
