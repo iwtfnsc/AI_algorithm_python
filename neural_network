@@ -1,0 +1,50 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jul 18 21:11:54 2018
+neural network
+@author: Administrator
+"""
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+import os#系统操作
+import time#时间
+import webbrowser#网页
+import pandas as pd
+import re
+import math
+'''
+首先以3，3，1为例
+前向传播……………………
+第一层:
+X0=1,X1,X2,X3
+
+第二层：
+a1^2=g(theta10 x 1 + theta11 x x1 + theta12 x x2 + theta13 x x3)
+a2^2=g(theta20 x 1 + theta21 x x1 + theta22 x x2 + theta23 x x3)
+a3^2=g(theta30 x 1 + theta31 x x1 + theta32 x x2 + theta33 x x3)
+
+第三层：
+a1^3=g(theta10 x 1 + theta11 x a1 + theta12 x a2 + theta13 x a3)
+
+
+
+
+反向传播......
+第三层：
+LLL31= yi-a1^3
+
+第二层：theta1.T X=theta10 x 1 + theta11 x x1 + theta12 x x2 + theta13 x x3
+LLL21= (theta1.T *LLL31)*(g'(z(3)))       a(3) * (1-a(3))
+
+'''
+
+
+
+
+
+
+
+
+
