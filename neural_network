@@ -40,7 +40,46 @@ LLL21= (theta1.T *LLL31)*(g'(z(3)))       a(3) * (1-a(3))
 
 '''
 
+###########文本文件读取后，进行处理成我们想要的数据##################
+def filepro(filename):
 
+    numFeat = len(open(filename).readline().split('\t')) - 1
+    X = []
+    y = []
+
+    file = open(filename)
+    for line in file.readlines():#列出每一行
+        lineArr = []#必须要重新来付值
+        
+        curLine = line.strip().split('\t')#去掉数据中　头和尾的空格
+
+        for i in range(numFeat):#
+            lineArr.append(float(curLine[i]))#每个数组里面去掉最后一个
+        
+        X.append(lineArr)
+        y.append(float(curLine[-1]))
+
+    return np.mat(X), np.mat(y).T
+#把Ｘ转换成矩阵，把Ｙ转置，变成向量Ｙ
+
+# theta * x= theta0+theta1*x1 + theta2*x2 + theta3*x3......thetan*xn
+def z(theta,a):
+    return (theta.T)*a
+# g(1/exp^theta.T*x) this is sigmod funtion
+def g(x):
+    return 1/(1+np.exp(-(x)))
+def a(x):
+    return g(z(theta,a))
+    
+#g（z(a))求导 ＝ a*(1-a)
+def daot(theta,a,y,layer,maxlayer):
+    if(layer==maxlayer):
+        return a(x)-y
+    elif(layer>1):
+        return(theta.T*daot(layer))* (a*(1-a))
+    else:
+        pass
+        
 
 
 
