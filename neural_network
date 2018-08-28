@@ -1,85 +1,266 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 18 21:11:54 2018
-neural network
+Created on Fri Aug 17 23:20:52 2018
+
 @author: Administrator
 """
-from mpl_toolkits.mplot3d import Axes3D#3D用
+
+# coding=gbk
+#import tensorflow as tf
+#from mpl_toolkits.mplot3d import Axes3D#3D用
 import matplotlib.pyplot as plt#显示２Ｄ画图
 import numpy as np#ＮＵＭＰＹ用
 from matplotlib import cm#画图里面的
 import os#系统操作
 import time#时间
 import webbrowser#网页
-import pandas as pd
+#import pandas as pd
 import re
 import math
+#from PIL import Image
+#import cv2
+#import network1
+add=("D://traningset//logistic01.txt")
+
+#x=100,3   theta=3 1
 '''
-首先以3，3，1为例
-前向传播……………………
-第一层:
-X0=1,X1,X2,X3
-
-第二层：
-a1^2=g(theta10 x 1 + theta11 x x1 + theta12 x x2 + theta13 x x3)
-a2^2=g(theta20 x 1 + theta21 x x1 + theta22 x x2 + theta23 x x3)
-a3^2=g(theta30 x 1 + theta31 x x1 + theta32 x x2 + theta33 x x3)
-
-第三层：
-a1^3=g(theta10 x 1 + theta11 x a1 + theta12 x a2 + theta13 x a3)
-
-
-
-
-反向传播......
-第三层：
-LLL31= yi-a1^3
-
-第二层：theta1.T X=theta10 x 1 + theta11 x x1 + theta12 x x2 + theta13 x x3
-LLL21= (theta1.T *LLL31)*(g'(z(3)))       a(3) * (1-a(3))
-
+求反向计算的值
 '''
+#def delta(theta,L,gz):
+#    return np.dot(theta.T,L)*gz
+def gz(a):
+    return a*(1-a)
+def g(z):
+#    print('theta',theta)
+#    print('x',x)
+#    print('x*theta',x*theta)
+#    print('1/(1+np.exp(-(x*theta)))',1/(1+np.exp(-(x*theta))))
+    return 1/(1+np.exp(-(z)))
+def h(theta,x):
+    r1,c1=theta.shape
+    r2,c2=x.shape
+    if (c2 is r1):
+        return x*theta
+    else:
+        print('错误！：矩阵无法计算出结果，围数不对','Ｘ是',r2,c2,'theta是',r1,c1)
 
 ###########文本文件读取后，进行处理成我们想要的数据##################
 def filepro(filename):
-
+    """ 读取数据
+        filename 文件名
+      返回，Ｘ１,Ｘ２特征向量Ｘ,Ｙ为输出结果
+        X 训练样本集矩阵
+        y 标签集矩阵
+    """
+#open(filename).readline()=打开文件，整行的数据
+#numfeat是3列数据中减去结果y那列得到的结果
+#    lineArr = []
     numFeat = len(open(filename).readline().split('\t')) - 1
     X = []
     y = []
-
+#    print(open(filename).readline() )
     file = open(filename)
     for line in file.readlines():#列出每一行
         lineArr = []#必须要重新来付值
         
         curLine = line.strip().split('\t')#去掉数据中　头和尾的空格
-
+#        print(curLine)
         for i in range(numFeat):#
             lineArr.append(float(curLine[i]))#每个数组里面去掉最后一个
         
         X.append(lineArr)
         y.append(float(curLine[-1]))
-
+#    print('x is value is:',np.mat(X))
+##    print('y is value is:',np.mat(y).T)    
     return np.mat(X), np.mat(y).T
+#    return x, y
 #把Ｘ转换成矩阵，把Ｙ转置，变成向量Ｙ
 
-# theta * x= theta0+theta1*x1 + theta2*x2 + theta3*x3......thetan*xn
-def z(theta,a):
-    return (theta.T)*a
-# g(1/exp^theta.T*x) this is sigmod funtion
-def g(x):
-    return 1/(1+np.exp(-(x)))
-def a(x):
-    return g(z(theta,a))
+
+x,y=filepro(add)
+
+#print('这是Ｙ输出：',y.shape,y)
+row,col=x.shape
+aa=np.ones(row).reshape(row,1)
+x=np.column_stack((aa,x))
+#print('这是Ｘ输入：',x.shape,x)
+#print('这是三层网络神经，第一层输入，第二层隐藏层，第三层输出')
+'''
+以下是网络神经的代码:
+
+１，随机初始化Ｗ权重值，和偏置值　
+２，前馈网络计算　Ｈ(ＴＨＥＴＡ)
+３,计算ＣＯＳＴ函数
+４，计算反向传播，ＪＴＨＥＴＡ的偏导数
+５，用反向传播得到的值和用梯度下降估值得到的值进行对比，确保这些值是正确的
+６，如果上面的值正确，就不用这个了，关掉    
+'''
+#a1=np.zeros(100)
+first1=1
+a1={}
+l22={}
+#print('fsafd',a1[0])
+z2=0
+#theta1是第一层到第二层的权重值，theta2是第二层到ＯＵＰＵＴ的权重值
+#np.random.seed(1)
+rate=1
+theta1=np.random.randn(3,100)
+theta2=np.random.randn(2,100)
+w1=np.zeros((2,100))
+w2=np.zeros((1,100))
+#print('更新权值w1',w1)
+#print('更新权值w2',w2)
+row,col=x.shape
+#print('w10=',w10)
+theta1=np.mat(theta1)
+#print('theta1=',theta1.shape,theta1)
+#print('theta2=',theta2.shape,theta2)
+outputf=1
+#l3=0
+#row=1
+oness=1
+testing_times=1100
+for i in range(testing_times):
     
-#g（z(a))求导 ＝ a*(1-a)
-def daot(theta,a,y,layer,maxlayer):
-    if(layer==maxlayer):
-        return a(x)-y
-    elif(layer>1):
-        return(theta.T*daot(layer))* (a*(1-a))
-    else:
-        pass
+    for j in range(row):
+#        print('ＸＴＨＥＴＡ=',(x[j,:] Ｘ的第Ｎ行Ｘtheta的第Ｎ列,theta1[:,j]))
+#      
+        z1=np.dot(x[j,:],theta1[:,j])#计算出点乘，也就是Ｘ０THETA0+X1 theta1+x2 theta2
+        e=(g(z1))
+        e=e.tolist()
+#        print('e',e[0])
+        a1[j]=e[0]
+#        print('a1[j]',x.shape,theta1.shape,a1[j])
+    a1=list(a1.values())
+    a1=np.array(a1)
+#    print('a1=',a1)
+    a1=np.column_stack((aa,a1))
+    
+#    print('a1',a1.shape,a1)
+    for jj in range(row):
+        z2=z2+np.dot(a1[jj,:],theta2[:,jj])
+    a2=g(z2)
+#print('a1=',a1)
+#    print('前向传播计算：')
+#    print('第二层z1=',z1)
+#    print('a1=',a1)
+#    print('theta1=',theta1)
+#    print('a2=',a2)
+#    print('z2=',z2)
+#    print('theta2=',theta2)
+#    
+    
+    
+#    print('反向传播计算：')
+    #反向传播theta.T * delta
+    l3=a2-outputf
+#    print('最后一层l3：',l3)
+    a11=a1[:,1]
+    a11=np.array(a11)
+    a11=a11
+#    print('a11',a11[2])
+    for j1 in range(row):
+        l2_temp=((theta2[:,j1])*l3)
+        l2_temp=l2_temp.tolist()
+        l22[j1]=l2_temp[0]
         
+    l2=list(l22.values())
+    l2=np.array(l2)        
+#    print('反向计算delta第二层l2：','\n',l2.shape,l2) 
+    
+#    print('下面进行更新权值')
+#    print('下面进行更新权值')
+        
+#    更新　theta11--theta1100= n* g'(z)*x1 
+#    更新　theta21--theta2100= n* g'(z)*x2
+
+#    更新　 n* g'(z)*x1 
+#    更新　 n* g'(z)*x1 
+
+    a1up=a1[:,1]
+#    print('a1up是激活值，一共１００个',a1up)
+# w1[0,q1]权值　+l2[:,q1]delta值　a1up[q1]*(1-a1up[q1])偏导数  
+    if(first1==1):
+        first1=first1+1
+    else:
+        w1=np.delete(w1,0,0)
+        w2=np.delete(w2,0,0)
+    for q1 in range(row):
+        w1[0,q1]=w1[0,q1]+rate*l2[q1]*(a1up[q1]*(1-a1up[q1]))*x[q1,1]
+        w1[1,q1]=w1[1,q1]+rate*l2[q1]*(a1up[q1]*(1-a1up[q1]))*x[q1,2]
+        w2[0,q1]=w2[0,q1]+rate*l3*(a2*(1-a2))*a1up[q1]
+#        print('theta1 0,0',theta1[1,q1])
+#        print('theta1 1,0',theta1[2,q1])
+#        print('gz(a1up[0,q1]',(a1up[q1]*(1-a1up[q1])))
+#        print('l2[0,q1]',l2[q1])
+#        print('w2[q1]',w2[0,q1])
+#    print('print(w1)',w1)
+#    print('print(w2)',w2)
+#    print('theta1',theta1)
+    #把Ｗ１变成theta，把更新后的ＴＨＥＴＡ值加上ＢＩＡＳ值，完成更新
+    temp1=theta1[0,:]
+    w1=np.row_stack((temp1,w1))
+    theta1=w1#此处完成更新
+    temp1=theta2[0,:]
+    w2=np.row_stack((temp1,w2))
+    theta2=w2#此处完成更新    
+    a1={}
+    l22={}
+print('theta1',theta1)    
+print('theta2',theta2)       
+print('a2',a2)     
+#print('l3',l3)    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
