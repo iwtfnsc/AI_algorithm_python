@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Sep 19 20:28:04 2018
+logistic 逻辑回归训练，
+@author: Administrator
+"""
+
+import tensorflow as tf
+import numpy as np
+import matplotlib as pls
+from tensorflow.examples.tutorials.mnist import input_data
+
+
+#你可以把MNIST_data放在程序所在的文件夹里面，就会自己找到。
+mnist=input_data.read_data_sets("MNIST_data",one_hot=True)
+
+batch_size=100
+nbatch=mnist.train.num_examples//batch_size
+x_data=tf.placeholder(tf.float32,[None,784])
+y_data=tf.placeholder(tf.float32,[None,10])
+
+
+w=tf.Variable(tf.zeros([784,10]))
+b=tf.Variable(tf.ones([10]))
+a1=tf.nn.softmax(tf.matmul(x_data,w)+b)
+
+loss=tf.nn.relu(tf.square(a1-y_data))
+train_step=tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+
+acy=tf.equal(tf.arg_max(y_data,1),tf.arg_max(a1,1))
+accuracy=tf.reduce_mean(tf.cast(acy,tf.float32))
+
+init=tf.global_variables_initializer()
+with tf.Session() as sess:
+    sess.run(init)
+    for i in range(300):
+        for batch in range(nbatch):
+            x,y=mnist.train.next_batch(batch_size)
+            sess.run(train_step,feed_dict={x_data:x,y_data:y})
+                                    
+        acc=sess.run(accuracy,feed_dict={x_data:mnist.test.images,y_data:mnist.test.labels})
+        acctrain=sess.run(accuracy,feed_dict={x_data:mnist.train.images,y_data:mnist.train.labels})
+        print('第',i+1,'次数据集测试精度为:%',acc*100,'训练集测试精度为:%',acctrain*100)
