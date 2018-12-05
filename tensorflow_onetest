@@ -1,0 +1,277 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 22 22:13:58 2018
+
+@author: Administrator
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Oct 26 23:10:47 2018
+ 1. 定义时间步, 定义每个输入数据与前多少个有序的输入的数据有关联
+    2. 定义隐层神经元的数量
+    3. 定义每批训练样本数
+    4. 定义输入层维度、权重、偏置
+    5. 定义输出层维度、权重、偏置
+    6. 定义学习率，学习率越小，越容易陷入局部最优结果，学习率越大，相邻两次训练结果间的抖动越大
+    7. 定义损失函数
+    8. 定义训练次数
+    9. 构建训练数据集
+    10. 构建测试数据集
+@author: Administrator
+"""
+#from tensorflow import keras
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+import os#系统操作
+import time#时间
+import webbrowser#网页
+import pandas as pd
+import re
+import math
+from PIL import Image
+import cv2
+import sklearn
+#import n1 
+import xlrd
+np.set_printoptions(threshold=np.inf)#显示一个矩阵所有的数字
+rowconut=0
+colconut=0
+datamatrix=[]
+#data=xlrd.open_workbook('daletou_input.xls')#打开ＥＸＣＥＬ表格 daletou_lable
+#data2=xlrd.open_workbook('daletou_lable.xls')#打开ＥＸＣＥＬ表格 daletou_lable
+#table=data.sheet_by_index(0)#索引 #table是x-input data
+#table2=data2.sheet_by_index(0)#索引 #table是y-output data
+#nrows=table.nrows#ＥＸＣＥＬ的总行数
+#ncols=table.ncols#ＥＸＣＥＬ的总列数
+#row=table.row_values(rowconut)#ＲＯＷ＝索引中的第Ｎ行
+nowtime=time.time()#开始计时
+'''
+下面是把excel的数据进行处理，去掉多的前几行，多的几列，得到我们想要的数据
+'''
+da_data=xlrd.open_workbook('da.xls')#打开ＥＸＣＥＬ表格 daletou_lable
+alltable=da_data.sheet_by_index(0)#索引 #table是x-input data
+nrows=alltable.nrows#ＥＸＣＥＬ的总行数
+ncols=alltable.ncols#ＥＸＣＥＬ的总列数
+#print((alltable.row_values(2))[0:9])
+
+a3=np.zeros(7).reshape(1,7)#做一个变量存Ｘ信号
+a33=np.zeros(7).reshape(1,7)#做一个变量存y信号
+#下面是从第二行开始，按顺序读完整个表格，０到９个数字
+for i in range(2,nrows,1):
+    row1=((alltable.row_values(i))[2:9])#table是x-input data ,行到第i行的2－９个数字
+    row2=((alltable.row_values(i))[2:9])#table是y-output data ,行到第i行的2－９个数字
+
+    #下面是把字符变成能用的数字　如果不处理，后面他是字符，不是数字
+    a1=[]
+    a11=[]
+    for n in row1:
+        a1.append(int(n));
+    a1=np.mat(a1)
+
+    #下面是把字符变成能用的数字
+    for n in row2:
+        a11.append(int(n));
+    a11=np.mat(a11)
+    
+    a3=np.row_stack((a3,a1))#np.row_stack是增加一行
+    a33=np.row_stack((a33,a11))#np.row_stack是增加一行
+
+x_7data=np.delete(a33,0,axis=0)#删除初始化时的第一行全０
+#x_7data=np.delete(x_7data,0,axis=1)#删除多出的第１列,第一列是编号
+#x_7data=np.delete(x_7data,0,axis=1)#删除多出的第２列，第二列是日期
+
+#y_7data=np.delete(a3,0,axis=1)##删除多出的第１列,第一列是编号
+#y_7data=np.delete(y_7data,0,axis=1)##删除多出的第２列，第二列是日期
+y_7data=np.delete(a3,0,axis=0)#删除初始化时的第一行全０
+y_7data=np.delete(y_7data,0,axis=0)#删除第二行数据，做为Ｙ输出信号
+
+print('x_7data',x_7data.shape,'y_7data',y_7data.shape)
+
+
+'''
+下面是把excel的数据进行处理，把数处理成one hot，得到我们想要的x数据
+'''
+#设定varialble
+imput_x=np.zeros(35).reshape(1,35)
+aaa=np.zeros(35).reshape(1,35)
+
+for i in range(x_7data.shape[0]):#第i行
+    for j in range(7):#第Ｊ列
+        for k in range(1,36,1):#第Ｊ列中的数变成one hot数
+            if((x_7data[i,j])==k):
+                aaa[0][k-1]=1
+                continue
+        imput_x=np.row_stack((imput_x,aaa))
+        aaa=np.zeros(35).reshape(1,35)
+#        print('12',imput_x)   
+imput_x=np.delete(imput_x,0,0)#delete row  
+print('imput_x?',imput_x.shape)
+#print('this is reshape:',imput_x[0].reshape(7,5))
+#print('this is reshape:',imput_x[3].reshape(7,5))
+
+'''
+下面是把excel的数据进行处理，把数处理成one hot，得到我们想要的y数据
+'''
+output_y=np.zeros(35).reshape(1,35)
+aaa=np.zeros(35).reshape(1,35)
+
+for i in range(y_7data.shape[0]):#第i行
+    for j in range(7):#第Ｊ列
+        for k in range(1,36,1):#第Ｊ列中的数变成one hot数
+            if((y_7data[i,j])==k):
+                aaa[0][k-1]=1
+                continue
+        output_y=np.row_stack((output_y,aaa))
+        aaa=np.zeros(35).reshape(1,35)
+#        print('12',imput_x)   
+output_y=np.delete(output_y,0,0)#delete row  
+print('output_y?',output_y.shape)
+#print('this is reshape:',output_y[0].reshape(7,5))
+#print('this is reshape:',output_y[3].reshape(7,5))
+
+
+passtime=time.time()#计时结束　用结束时间－开始时间＝总耗时多少秒
+print('the data process spend time=:',str(passtime-nowtime)+'S')
+#导入输入和输出数据
+#output_y
+input_x=imput_x
+         
+#input photo
+#n_inputs=1#输入一行有多少个数据
+#max_time=35#输入有多少行
+n_inputs=35#输入一行有多少个数据
+max_time=1#输入有多少行
+lstm_size=100#100个ＬＴＳＭ层　隐藏层单元ＢＬＯＣＫ
+n_classes=35#输出多少个分类
+batch_size=100 #第一批有多少个样本，
+n_batch=input_x.shape[0]//batch_size
+#n_batch_test=front5_test_input_data.shape[0]//batch_size
+with tf.name_scope('input'):
+    with tf.name_scope('x-input'):
+        x=tf.placeholder(tf.float32,[None,None])
+    with tf.name_scope('y-input'):
+        y=tf.placeholder(tf.float32,[None,35])
+with tf.name_scope('weight'):
+    weights=tf.Variable(tf.truncated_normal([lstm_size,n_classes],stddev=0.1))
+with tf.name_scope('biases'):
+    biases=tf.Variable(tf.constant(0.1,shape=[n_classes]))
+
+
+def RNN(X,weights,biases):
+    with tf.name_scope('lstm'):
+        with tf.name_scope('lstm-input'):
+            inputs=tf.reshape(X,[-1,max_time,n_inputs])#n,1,35
+        with tf.name_scope('lstm-cell'):
+            #
+#            lstm_cell=tf.nn.rnn_cell.BasicLSTMCell(lstm_size)
+            lstm_cell=tf.nn.rnn_cell.LSTMCell(lstm_size)
+        with tf.name_scope('lstm-final_state'):
+            outputs,final_state=tf.nn.dynamic_rnn(lstm_cell,inputs,dtype=tf.float32)
+        
+        with tf.name_scope('lstm-results'):
+            results=tf.nn.relu(tf.matmul(final_state[1],weights)+biases)
+            
+        return results
+
+
+with tf.name_scope('LSTM'):
+    prediction=RNN(x,weights,biases)
+    with tf.name_scope('entropy'):
+#        cross_entropy=tf.reduce_mean(np.square(prediction-y))        
+        cross_entropy=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=y))
+        tf.summary.scalar('cross_entropy',cross_entropy)
+    with tf.name_scope('optimizer'):    
+            train_step=tf.train.AdamOptimizer(0.00001).minimize(cross_entropy)
+#tf.train.G
+with tf.name_scope('accuracy'):        
+    with tf.name_scope('correct'):        
+        correct_prediction=tf.equal(tf.argmax(y,1),tf.argmax(prediction,1))
+        #axis1=row  the max number of y beetwen max nummber of prediction ,isn't equal?
+        #if they has the same value,then correct=1,other wise,correct=0
+
+    with tf.name_scope('acc'):
+        accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
+#        accuracy=tf.reduce_mean(correct_prediction)
+        tf.summary.scalar('accuracy',accuracy)
+merged=tf.summary.merge_all()     
+init=tf.global_variables_initializer()
+saver=tf.train.Saver()#模型保存用
+
+'''
+下面二行代码是开ＧＰＵ，设定为显存占用百分比
+'''
+#gpuConfig = tf.ConfigProto(allow_soft_placement=True)
+#gpuConfig.gpu_options.per_process_gpu_memory_fraction = 0.3
+#config = gpuConfig
+'''
+下面三行代码是关掉ＧＰＵ，开启ＣＰＵ
+'''
+#os.environ['TF_CPP_MIN_LOG_LEVEL']='3' #Disable Tensorflow debugging information
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1' #Set GPU device -1
+
+#somedat=[]
+with tf.Session() as sess:
+    sess.run(init)
+    train_writer=tf.summary.FileWriter('caipiao',sess.graph)
+    for epoch in range(600):
+        icount=0
+            
+        for i in range(n_batch):
+            batch_y=output_y[icount:(50+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+            batch_x=input_x[icount:(50+icount):1]#第Ｎ行
+
+            icount=icount+50
+
+            summary,_=sess.run([merged,train_step],feed_dict={x:batch_x,y:batch_y})
+#            print('prediction=',prediction)
+#            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+        train_writer.add_summary(summary,epoch)
+        icount=0
+        epoch1=epoch
+        for i in range(n_batch):
+            batch_y2=output_y[icount:(50+icount):1]
+            batch_x2=input_x[icount:(50+icount):1]
+    
+            icount=icount+50            
+            b=sess.run(prediction,feed_dict={x:batch_x2,y:batch_y2})
+#            c=sess.run(batch_y2)
+            if(epoch1%10==0):
+#                  print(b)
+#                  print(c)
+                 np.save("caipiao_b",b)
+            acc=sess.run(accuracy,feed_dict={x:batch_x2,y:batch_y2})
+            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+        print('大乐透彩票测试数据，第',epoch+1,'次精度:=',acc*100,'%')
+#        print(np.load("E:\\program\\ai\\aifirst\\caipiao_b.npy"))
+    saver.save(sess,'caipiao_m1/caipiao_moudel1')        
+
+        
+        
+        
+   
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
