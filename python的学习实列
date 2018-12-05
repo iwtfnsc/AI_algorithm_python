@@ -1,0 +1,1413 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr 18 22:25:33 2018
+
+@author: Administrator
+"""
+#此ＰＹＴＨＯＮ学习实列是很多零散的程序构成的，放在这里以后自己忘记了，还回来用
+# coding=gbk
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+import os#系统操作
+import time#时间
+import webbrowser#网页
+import pandas as pd
+import re
+import math
+from PIL import Image
+import cv2
+import sklearn
+#import n1 
+import xlrd
+import keras
+from keras.models import sequential
+import tushare as ts
+'''
+print(a.ndim)
+print(a.shape)
+print(a.size)
+print(a.dtype)
+print(a.itemsize)
+print(a.data)
+'''
+#创建数组
+'''
+b=np.array([1,2,3])
+c=np.zeros((4,4))#生成４*４的矩阵
+d=np.ones((3,3))#生成３*３的矩阵
+print(b,'222',c,'3333',d)
+bb=np.arange(4,28,3)
+print(bb)
+
+e=np.arange(7)
+ee=np.arange(12).reshape(3,4)#生成３*４的，０－１１矩阵
+eee=np.arange(24).reshape(2,3,4)#生成２*３*４的矩阵，０－２３
+print(e,ee,'hhhhhhh',eee)
+'''
+#基本运算'''
+'''
+b=np.array([22,33,44,55])
+c=np.arange(4,20,5)
+d=b-c
+print(d)
+e=b**2
+print(e)
+print(b==33)
+'''
+'''
+#数组乘法和矩阵点积
+A=np.array([[1,1],[3,2]])
+B=np.array([[1,2],[2,2]])
+print(A*B)
+print(np.dot(A,B))
+'''
+'''
+##linspace=１＝start  2=总数……３＝分成多少份？
+b=np.linspace(0,10,11)
+print(b)
+
+'''
+#最大数和最小数
+'''
+print(a.min())
+print(a.max())
+
+
+'''
+#通用函数　ＵＦＵＮＣ
+'''
+b=np.arange(3)
+c=np.arange(3)
+print(np.exp(b))#指数
+print(np.sqrt(b))#平方
+print(np.add(b,c))#加法
+'''
+'''
+更多函数all, alltrue, any, apply along axis, argmax, argmin, argsort, average, bincount, 
+ceil, clip, conj, conjugate, corrcoef, cov, cross, cumprod, cumsum, diff, dot, floor, inner, inv, lexsort, max, maximum,
+mean, median, min, minimum, nonzero, outer, prod, re, round, sometrue, sort, std, sum, trace, transpose, var, vdot, vectorize, where
+'''
+
+#一维数组可以被索引、切片和迭代，就像列表和其它Python序列。
+#b=np.arange(8,64,8)**2#
+'''
+b=np.floor(10*np.random.random((2,12)))
+b=np.hsplit(b,6)#把一个矩阵分成几个
+c=b
+print(b is a)#判断
+print(b)
+
+'''
+######Python 传递不定对象作为参考4，所以函数调用不拷贝数组。
+'''
+def f(x):
+    print (id(x))
+print(id(a))
+print(f(a))
+
+'''
+#以下是大部分ＮＵＭＰＹ的命令集
+'''
+创建数组
+arange, array, copy, empty, empty_like, eye, fromfile, fromfunction, identity, linspace, logspace, mgrid, ogrid, ones, ones_like, r , zeros, zeros_like 
+转化
+astype, atleast 1d, atleast 2d, atleast 3d, mat 
+操作
+array split, column stack, concatenate, diagonal, dsplit, dstack, hsplit, hstack, item, newaxis, ravel, repeat, reshape, resize, squeeze, swapaxes, take, transpose, vsplit, vstack
+询问
+all, any, nonzero, where 
+排序
+argmax, argmin, argsort, max, min, ptp, searchsorted, sort 
+运算
+choose, compress, cumprod, cumsum, inner, fill, imag, prod, put, putmask, real, sum 
+基本统计
+cov, mean, std, var 
+基本线性代数
+cross, dot, outer, svd, vdot
+
+'''
+
+'''
+#线代的行列式，矩陈的逆，
+a=np.random.rand(2,2)*100
+
+print(a)
+print('det of a is:',np.linalg.det(a))
+print('inv of a is:',np.linalg.inv(a))
+print('det of a is:',np.linalg.inv(a)*np.linalg.det(a))
+'''
+'''
+A = np.array([2,4,5,6,6,7,6,5,4,5])  
+print(A.reshape(-1,2))#不知道能有多少行，只把上面的矩陈变成两列
+print(A.reshape(2,-1))#不知道能有多少列，只把上面的矩陈变成两行
+print(A.reshape(-1))#定义成１列
+print(A.reshape(5,2))#自己定义行列
+'''
+'''
+A = np.array([2,4,5,6,6,7,6,5,4])
+A=A.reshape(-1,3)
+print(np.linalg.det(A))
+
+'''
+
+#solve equ
+#3x+4y+4z=5
+#2x+2y+0=28
+#0+2y+4z=9
+'''
+A=format("6,1f")
+A=np.array([3,4,4,2,2,0,0,2,4])
+A=A.reshape(-1,3)
+A=np.around(A)
+b=np.array([5,28,9])
+b=b.reshape(-1,1)
+x=np.linalg.solve(A,b)#解方程的专用
+print(x)
+'''
+'''
+print('this is A=',A)
+print('this is b=',b)
+x=np.linalg.inv(A)
+print('ident :=',np.around(np.dot(A,x)))#around是取整数
+c=np.dot(x,b)
+print('this is A inv time to b=:',c)
+print('check this answer:',np.dot(A,c))
+'''
+'''
+b.dtype=(int)
+b=1*np.random.random(4).reshape(2,2)
+
+print(b)
+
+'''
+'''
+b=np.round(10*np.random.random(25))
+b=b.reshape(5,5)
+print(b)
+print('det=',np.linalg.det(b))
+print('b,transpose=',np.transpose(b))
+print('1/det=',1/(np.linalg.det(b))
+#print('det=',np.linalg.det(b))
+#print('det=',np.linalg.det(b))
+#print('det=',np.linalg.det(b))
+'''
+'''
+###this is simple draw 2D
+func = np.poly1d(np.array([1, 2, 3, 4]).astype(float))#创建一个数组
+print(func)
+x = np.linspace(-10, 10, 30)#从-10开始，到正10，分成30份
+print(x)
+y = func(x)
+print(y)
+plt.plot(x, y,'b--')
+plt.xlabel('this is x')
+plt.ylabel('this is y')
+plt.title('my first')
+plt.show()
+'''
+
+##this is simple draw 3D
+#fig = plt.figure()
+#ax = fig.add_subplot(111, projection='3d')
+#u = np.linspace(-1, 1, 100)
+#x, y = np.meshgrid(u, u)
+#z = x ** 2 + y ** 2
+#ax.plot_surface(x, y, z, rstride=4, cstride=4, cmap=cm.YlGnBu_r)
+##ax.contourf(x, y, z)
+#plt.show()
+
+
+#等高图
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#u = np.linspace(-1, 1, 190)
+#x, y = np.meshgrid(u, u)
+#z = x ** 2 + y ** 2
+#print('z',z)
+#ax.contourf(x, y, z)
+#plt.show()
+
+#print the real time
+'''
+print( time.strftime("%Y-%m-%d %X", time.localtime()))
+
+'''
+
+
+##定时打开一个网页
+#'''
+#rest_count=0
+#while(rest_count<5):
+#    time.sleep(60*4)
+#    webbrowser.open("www.baidu.com")
+#    rest_count=rest_count+1
+#'''
+
+'''
+tnumber=0
+a=np.round(10*np.random.random(25))
+a=a.reshape(5,5)
+b=np.round(20*np.random.random(25))-10
+b=b.reshape(5,5)
+print('this is a  matrix:')
+print(a)
+
+print('this is b  matrix:')
+print(b)
+
+print('this is matrix a det:')
+print(np.linalg.det(a))
+
+print('this is matrix a det transpose:')
+print(np.transpose(np.linalg.det(a)))
+
+print('this is matrix a transpose:')
+print(np.transpose(a))
+
+print('this is matrix a *matrix b:')
+print(np.dot(a,b))
+
+print('this is matrix a is det *matrix b is det:')
+c=(np.linalg.det(a))
+d=(np.linalg.det(b))
+print(c*d)
+
+print('this is det(matrix a + matrix b) :')
+print(np.linalg.det(a+b))
+'''
+
+'''
+#测试碟位矩阵　，方阵和ＭＮ型矩阵的不同之处
+a=np.random.random(4)
+a=a.reshape(2,2)
+print('this is matrix a :')
+print(a)
+
+print('this is identymatrix time a :')
+print(np.dot((np.eye(2,2)),a))
+
+print('this is a time identymatrix  :')
+print(np.dot(a,(np.eye(2,2))))
+
+'''
+
+'''
+#string 
+print('my name is %s and weight is %d kg'%('haha',45))
+
+'''
+#string1=dir(plt)
+#print(string1)
+#os.mkdir('your are a good man')
+'''
+numbercount=0
+for i in range(1,5):
+    for j in range(1,5):
+        for u in range(1,5):
+            if((i!=j)and(i!=u)and(j!=u)):
+                print(i,j,u)
+                numbercount=numbercount+1
+    
+print('共有:',numbercount,'个数')    
+'''    
+'''
+jiangji100w=0
+    
+number1=float(input('input the number wan'))
+if(number1>=100*10000):
+    jiangji100w=jiangji100w+((number1-100*10000)*0.01)#高于１００万
+    number1=100*10000
+if(number1>=60*10000):
+    jiangji100w=jiangji100w+((number1-60*10000)*0.015)#６０－１００
+    number1=60*10000
+if(number1>=40*10000):
+    jiangji100w=jiangji100w+((number1-40*10000)*0.03)#４０－６０
+    number1=40*10000    
+if(number1>=20*10000):
+    jiangji100w=jiangji100w+((number1-20*10000)*0.05)#２０－４０
+    number1=20*10000    
+if(number1>=10*10000):
+    jiangji100w=jiangji100w+((number1-10*10000)*0.075)#10-20    
+    number1=10*10000    
+if(number1>=0):
+    jiangji100w=jiangji100w+(number1*0.1)#10-20         
+print(jiangji100w)    
+ 
+    '''
+    
+    
+    
+    
+    
+    
+
+#计算电阻值与电流的关系
+#r=4#float(input('请输入喇叭阻抗:　　'))
+#v_total=4#float(input('输出幅度电压大小:　　'))
+#title_name='speaker out'#input('请输入英文抬头名：　　')
+#r2=8
+#
+#def i(t):
+#    return v/r
+#
+#v=np.arange(0.1,v_total,0.01)
+#w= (i(v)**2)*r
+#w2= ((v/r2)**2)*r2
+##plt.plot(v,w,'g--',v,v/r,'b--',v,v,'r--')
+#plt.plot(v,w,'m--',v,w2,'g-')
+#plt.xlabel('voltage')
+#plt.ylabel('watt')
+#plt.title(title_name)
+#plt.grid(True, linestyle = "-", color = "black", linewidth = "0.99") 
+##plt.xlim(0.1,1.0)#设置x轴范围
+##plt.ylim(0.01,0.4)
+#plt.text(v_total+0.2,0.7,r'$red-speaker R-4R$')
+#plt.text(v_total+0.2,0.9,r'$green-speaker R-8R$')
+#plt.show()
+
+#x=[0,1]
+#y1=[4,7]
+#y=[0,3]
+#
+#plt.plot(x,y1,'ro')
+#plt.plot(x,y,'b-')
+#plt.scatter(x,y)
+#plt.plot(x,y,'g-',label="$j(\Theta )=1/2\sum_{i=1}^{m}(h(\Theta )(x^{i})-y^{i})^{2}$",linewidth=1)
+#plt.legend()
+#plt.plot
+
+
+'''
+plt.annotate('watt-w', xy = (2.5, 1.5), xytext = (3, 1.5), \
+arrowprops = dict(facecolor = 'green', shrink = 0.05))
+
+plt.annotate('voltage', xy = (2.5,2.5), xytext = (3, 2.5), \
+arrowprops = dict(facecolor = 'red', shrink = 0.05))
+
+plt.annotate('current', xy = (2.5, 0.6), xytext = (3, 0.6), \
+arrowprops = dict(facecolor = 'blue', shrink = 0.05))
+'''
+
+'''
+增加一行或一列
+np.row_stack((a,b))
+np.colum_stack((a,b))
+
+
+'''
+
+
+
+#排序
+'''
+a=[3,6,3,4,55,6,767,10]
+a.sort()
+print(a)
+'''
+
+
+'''
+
+#导入ＥＸＣＥＬ
+
+mybom=pd.read_excel(r'd:\test\hi.xls',sheetname=0)
+#print(mybom.iloc[0,:])
+print(mybom)
+'''
+
+'''
+a=np.array([12,5,1,5,8,3,6,3]).reshape(2,4)
+b=np.array([12,5,1,5,8,3,6,76]).reshape(2,4)
+print((a==b).any())
+print((a==b).all())
+print(a)
+print(b)
+
+'''
+
+'''
+#分析导数
+def h(x):
+    x=80-(5*x**2)
+    return x
+def deriv(x):
+	dx=0.00000001
+	return  (f(x+dx)-f(x))/dx
+h=np.arange(1,100,1)
+def f(x):
+    xx=(15*(x**2))+7
+    return xx
+plt.plot(h,deriv(h),'b--')
+plt.grid(True)
+plt.xlim(0,20)
+plt.ylim(0,600)
+'''
+
+
+
+
+##分析导数2 南瓜从楼顶扔下时的瞬间速度　80-5Ｔ^２
+#def f(x):
+#    xx=80-(5*(x**2))
+#    return xx
+#def deriv(x):
+#	dx=0.0000000000001
+#	return  (f(x+dx)-f(x))/dx
+##t=4
+#t=np.arange(0,10,1)
+#print(deriv(t))
+#plt.plot(t,deriv(t),'b--')
+#plt.grid(True)
+
+'''
+#分析导数3    [ 1-cos(x)]/x
+def f(x):
+    xx=(1-np.cos(x))/x
+    return xx
+def deriv(x):
+	dx=0.0000000000001
+	return  (f(x+dx)-f(x))/dx
+#t=4
+t=np.arange(1,100,1)
+print(deriv(t))
+plt.plot(t,deriv(t),'b--')
+plt.grid(True)
+
+'''
+
+
+'''
+#分析导数3    [ 1-cos(x)]/x
+def h(x):
+    xx=np.sin(x)
+    return xx
+def deriv2(x):
+	dx=0.0000000000001
+	return  (h(x+dx)-h(x))/dx
+
+def f(x):
+#   xx=1/x
+#    xx=-1/x**2
+#    xx=np.sin(x)
+    xx=x**2
+
+    return xx
+def deriv(x):
+    dx=0.0000000001
+    return (f(x+dx)-f(x))/dx
+#t=4
+t=np.arange(-100,200,0.1)
+print('this is deriv sin(x):',deriv(t))
+print('this is cos(x):',h(t))
+print('this is diff sin(x):',np.diff(f(t)))
+plt.plot(t,deriv(t),'m--')
+print(deriv(t))
+plt.grid(True)
+'''
+##功率WATT图 电阻变化时功率
+#lable=('v=3.3','v1=5','v2=4')
+#v=3.3
+#v1=5
+#v2=4
+#r=np.arange(1,2,0.01)
+#def f1(x):
+#    return x/r*x#电流X电压＝功率
+#def f2(x):
+#    return x**2/r#电压的平方/电阻＝功率
+#def f3(x):
+#    return (x/r)**2*r#电流的平方X电阻＝功率
+#plt.plot(r,f1(v),'b-')
+#plt.plot(r,f1(v1),'m-')
+#plt.plot(r,f1(v2),'r-')
+#plt.xlabel('R')
+#plt.ylabel('watt')
+#plt.legend(lable)
+#plt.title('watt with the R change ')
+#plt.grid()
+#
+#
+###电流图
+#r=3.3
+#v=np.arange(5,12,0.05)
+#
+#v2=12
+#r2=np.arange(1,6,0.05)
+#
+#def f1(r):
+#    return v/r#电流X电压＝功率
+#def f2(v2):
+#    return v2/r2#电流X电压＝功率
+##plt.plot(v,f1(r),'r-')
+#plt.plot(r2,f2(v2),'r-')
+#plt.xlabel('voltage')
+#plt.ylabel('current')
+#plt.legend('current')
+#plt.title('current with the voltage change ')
+#plt.grid()
+##
+#
+#
+#  电压变化时功率
+#lable=('5R','10R','22R')
+#r=5
+#r2=10
+#r3=22
+#v=np.arange(5,12,0.001)
+#def f1(r):
+#    return v/r*v#电流X电压＝功率
+#def f2(x):
+#    return v**2/r#电压的平方/电阻＝功率
+#def f3(x):
+#    return (v/r)**2*r#电流的平方X电阻＝功率
+#plt.plot(v,f1(r),'b-')
+#plt.plot(v,f1(r2),'m-')
+#plt.plot(v,f1(r3),'r-')
+#plt.xlabel('voltage')
+#plt.ylabel('watt')
+#plt.legend(lable)
+#plt.title('watt with the voltage change ')
+#plt.grid()
+##
+#
+#
+#
+#
+##  电阻分压时电压变化
+#v=9.8
+#
+#rdown=np.arange(1,30,0.1).reshape(1,-1)
+#col=rdown.shape[1]
+#rup=[10]*col
+#rup1=[20]*col
+#rup2=[1]*col
+#rup=np.array(rup).reshape(1,-1)
+#print(rup,rdown)
+#def f1(rup):
+#    return v*(rdown/(rdown+rup))
+#
+#def f2(rup1):
+#    return v*(rdown/(rdown+rup))
+#
+#def f3(rup2):
+#    return v*(rdown/(rdown+rup))
+#
+#plt.plot(rdown.tolist()[0],f1(rup).tolist()[0],'b-')
+#plt.plot(rdown.tolist()[0],f1(rup1).tolist()[0],'r-')
+#plt.plot(rdown.tolist()[0],f1(rup2).tolist()[0],'m-')
+##plt.plot(v,f2(r),'m-')
+##plt.plot(v,f3(r),'r-')
+#lable=('Rup','Rup1','Rup2')
+#plt.xlabel('R down')
+#plt.ylabel('v-out')
+#plt.legend(lable)
+#plt.title('voltage with the rdown change ')
+#plt.grid()
+#
+
+
+
+##下面是g(Z)函数的图
+#def g1(z):
+#    return 2 * 1.0/(1+np.exp(-2*z))-1
+#def g(z):
+#    return 1/(1+np.exp(-(z)))
+##    return 2 * 1.0/(1+np.exp(-2*z))-1
+#label=('g(z)','g1(z)')
+#a=np.arange(-6,6,0.05)
+#
+##print('g(a) is:',g(0.0))
+##print('g1(a) is:',g1(0.42))
+#
+#plt.plot(a,g(a),'b-')
+#plt.plot(a,g1(a),'r-')
+#
+#plt.legend(label)
+#plt.grid(2)
+#
+##下面是g(Z)函数的图
+#def f(x):
+#    return np.sin(1/x)
+#label=('g(x)')
+#a=np.arange(np.pi,100000,np.pi)
+#
+##print('f(x) is:',f(50000000000000))
+##print('g1(a) is:',g1(0.42))
+#
+#plt.plot(a,f(a),'b-')
+##plt.plot(a,g1(a),'r-')
+#
+#plt.legend(label)
+#plt.grid(2)
+
+
+
+#下面是log(h(x))和g(z)函数的图
+#def g1(z):
+#    return 2 * 1.0/(1+np.exp(-2*z))-1
+#def g(z):
+#    return 1/(1+np.exp(-(z)))
+##    return 2 * 1.0/(1+np.exp(-2*z))-1
+#label=('sigmad funtion','g1(z)')
+#a=np.arange(-10,10,0.5)
+#
+#print(',g(0.2) is:',g(-2.6))
+#print('g(0.6) is:',g(-1.6))
+#print('g(1.5) is:',g(1.6))
+#print('g(-1) is:',g(2.6))
+#print('g1(a) is:',g1(0.42))
+#
+#plt.plot(a,g(a),'m-')
+##plt.plot(a,g1(a),'r-')
+##print('g(a)',g(a))
+#m=len(a)
+#a1=np.ones(m).reshape(1,-1).T
+##print(m)
+##plt.plot(a,-np.log(g(a)),'b-')
+##plt.plot(a,-np.log(1-g(a)),'r-')
+#
+##plt.plot(a,a**2,'r-')
+##plt.plot(a,np.log(g(a)),'r-')
+#
+#plt.legend(label)
+#plt.grid(2)
+#
+#import scipy as SP
+
+
+#x=[[1,1],[2,5],[5,6]]
+#y=[[8,9,10]]
+#x=np.mat(x)
+#y=np.mat(y).T
+#print('x.T.shape,',x.T.shape,'x.shape',x.shape)
+#print('x=',x,'y=',y)
+#print('np.linalg.det(x.T*x)',np.linalg.det(x.T*x))
+#print('np.linalg.inv(x.T*x)',np.linalg.inv(x.T*x))
+#print('np.linalg.pinv(x.T*x)',np.linalg.pinv(x.T*x))
+#theta=(np.linalg.pinv(x.T*x))*x.T*y
+##theta=np.linalg.solve(x,y)
+#print('theta',theta)
+##pi_a = np.linalg.pinv(x)
+#print('x*theta',x*theta)
+
+#if((x*theta)is y):
+#    print('ansower is right')
+#else:
+#    print('ansower is wrong')
+#def  test(sizes):
+#    a=[np.random.randn(y, 1) for y in sizes[1:]]
+##    print('a2',"\n",a[0],"\n", 'a3',"\n",a[1])
+#    
+#    
+#    weights = [np.random.randn(y, x)
+#                        for x, y in zip(sizes[:-1], sizes[1:])]
+##    print('weights1',"\n",weights[0],"\n", 'weights2',"\n",weights[1])
+    
+    
+    
+    
+    
+    
+#    print('a2',"\n",a[0],"\n", 'a3',"\n",a[1],"\n", 'a4',"\n",a[2])
+#def  run():
+##    a=[np.random.randn(y, 1) for y in sizes[1:]]
+##    print('a2',"\n",a[0],"\n", 'a3',"\n",a[1],"\n", 'a4',"\n",a[2])
+#    # z的个数
+#    t = 20000
+#    z_lst = np.empty(t)
+#    m=1000
+#    x = np.ones(m)
+#    b = 0
+#
+#    for i in range(t):
+#        w = np.random.randn(m)/ np.sqrt(m)
+#        z = np.sum(x * w) + b
+#        z_lst[i] = z
+#
+##    print( 'z 平均值：', np.mean(z_lst))
+##    print ('z 方差：', np.var(z_lst))
+#    plt.xlim(-100,100)
+#    plt.hist(z_lst, bins=10)#hist是一个直方图函数
+#    plt.show()
+#    
+#    
+#def sigmoid(z):
+#    """The sigmoid function."""
+#    return 1.0/(1.0+np.exp(-z))    
+##b=np.arange(1,101)
+##b=b.reshape(10,10)
+##sizes=b.shape
+#sizes=(3,2,1)
+#num_layers = len(sizes)
+##test(sizes)
+##print('layers=',len(sizes))
+##y=3
+##print([np.random.randn(y, 1) for y in sizes[1:]])
+#biases=[np.random.randn(y, 1) for y in sizes[1:]]
+##print('a2',"\n",a[0],"\n", 'a3',"\n",a[1])
+##print('a:=',a)
+#a=0.02
+#weights = [np.random.randn(y, x)
+#                        for x, y in zip(sizes[:-1], sizes[1:])]
+##print('weights:',weights)
+##print('biases:',biases)
+#for b, w in zip(biases,weights):
+#    
+#    a = sigmoid(np.dot(w, a)+b)
+##print('feedforward=',a)
+#nabla_b = [np.zeros(b.shape) for b in biases]
+#nabla_w = [np.zeros(w.shape) for w in weights]
+##print(nabla_b,'\n',num_layers )
+#
+#test_data=3
+##if test_data: n_test = len(test_data)
+#if test_data: b=675
+##print(b)
+#training_data=np.random.random(20).reshape(5,4)
+##print(training_data)
+#mini_batch_size=1
+#n=20
+#aa=[training_data[k:k+mini_batch_size]
+#                for k in range(0, n, mini_batch_size)]
+
+
+#print('aa0=',aa[0],'\n','aa1=',aa[1],'\n','aa2=',aa[2],'\n','aa3=',aa[3],'\n','aa4=',aa[4],'\n','aa5=',aa[5])
+
+#c=np.arange(1,10)
+#c=np.array(c).reshape(3,3)
+#print(c)
+#print('test=',c[0:1])
+#print('test=',c[1:2])
+#print('test=',c[2:3])
+
+#[0],'\n',aa[1],'\n',aa[2],'\n',aa[3],'\n',aa[4],'\n',aa[5],'\n',aa[6],'\n',aa[7],'\n',aa[8],'\n',aa[9]
+
+#数据结构，列表推导式
+#vec = [2, 4, 6]
+#vec2 = [15, 16, 22]
+##nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+##print([x+y for x,y in zip(vec,vec2)])
+#a=7
+##这前面必须是一个数,或一个方程，不能是两个或以上
+#print('测试列表推倒式结果＝',[x*2+y for x,y in zip(vec,vec2)if a>0])
+#
+#
+#
+##嵌套列表解析
+#m1=np.arange(1,13,1)
+#m1=m1.tolist()
+#np.random.shuffle(m1)#随机打乱顺序
+#m1=m1.reshape(4,3)
+#b= [[row[i] for row in m1] for i in range(4)]
+#b1=m1.T.tolist()
+#print('用嵌套列表解析=',b)
+#print('用.T=',b1)
+
+#.format表达式
+#z='你是{0},我是{1}'.format('猪','人')
+##print(m1)
+##print(m1[-2])
+##print(np.argmax(m1))
+##nabla_b = [np.zeros(b.shape) for b in m1]
+#for i in range(5):
+#    nabla_b[-1]=i
+##    print(nabla_b)
+
+
+
+#print('image=======',dir(Image))
+#print('tf=======',dir(tf))
+#print('cv2=======',dir(cv2))
+'''
+set_printoptions(precision=None, 
+                 threshold=None, 
+                 edgeitems=None,
+                 linewidth=None, 
+                 suppress=None,
+                 nanstr=None,
+                 infstr=None,
+                 formatter=None)
+'''
+#np.set_printoptions(threshold='nan')
+#im=Image.open(r'C:\Users\Administrator\Desktop\pic\test1\a.jpg')D:\img
+#im=Image.open(r'D:\img\b400.jpg')
+##im.show()
+##print('图像格式',im.format)
+##print('图像大小',im.size)
+##print('图像模式',im.mode)
+#im=im.convert('L')#1是黑白　　０黑　２５５白　　Ｌ是灰度  
+##im.show()
+#img=np.array(im)
+#
+#print('图像矩阵大小',img.shape)
+#print('图像大小',img.size)
+#print('图像像数',img)
+#img=img.T
+##img=np.linalg.inv(img)
+## flip 1,0,-1
+#xImg = cv2.flip(img,0,dst=None) #水平镜像
+#
+#img=Image.fromarray(img)
+#img.show()
+#plt.imshow(xImg)
+#
+#a=3333
+#assert a>=88,'这里a<88'
+#w1=np.zeros((2,100))
+#print(w1[1])
+
+
+#'''
+#求导数
+#'''
+#b=4
+#def f(x):
+##    return 2*np.log2(x*np.exp(1))
+##    return np.sinh(x)   
+#    return np.cos(x)
+##    return 2**x
+##    return 1/x**2
+##   return np.log2(x)
+##    return (1+1/x)**2
+#
+#print('圆周率＝圆的周长除以圆的直进＝',np.pi)
+#
+##def d(x):纪念
+##    h=0.000000001
+##    return (f(x+h)-f(x))/h
+#
+#
+##def ff(x):
+###    return np.log2(x)
+##     return 2**x
+###    return (x**3)^-1
+###    return 1/x**2
+##def df(x):
+##    h=0.000000001
+##    return (ff(x+h)-ff(x))/h
+#x=np.arange(-900,900,0.1)
+#x=100000000
+#print('e自然常数(1+1/x)**x＝',np.power((1+1/x),x))#Ｅ自然数的来源
+##print('np.exp(1)＝',np.exp(1))
+##plt.plot(x,f(x),x,d(x))
+#plt.plot(x,f(x),'b--')
+#plt.grid(1)
+#a=0
+#for i in range(500):
+#    a=a+1
+#    if(a%50==0):
+#        print(i)
+    
+#    pass
+
+    
+#    
+#input = ['a', 'b', '1', '2', '*', '3', 'c', '&', '#']
+#output = ["Letter", "Letter", "Number", "Number", "Symbol", "Number", "Letter", "Symbol", "Symbol"]
+#ds = DataSet(input, output, 9)
+#for i in range(3):
+#    image_batch, label_batch = ds.next_batch(4)
+#    print(image_batch)
+#    print(label_batch)
+
+#a=np.arange(-11,10,1)
+#def simoid(x):
+#    return 1/(1+np.exp(-x))
+#
+#plt.plot(a,simoid(a),'r--')
+#print (simoid(1),np.exp(1))
+#plt.grid(22)
+
+
+
+
+#计算程序运行时间
+#计算程序运行时间
+#计算程序运行时间
+#
+#nowtime=time.time()
+#
+##中间放程序
+#a=np.random.rand(1000000)
+#b=np.random.rand(1000000)
+#c=a.T*b
+#passtime=time.time()
+#time1=time.ctime()
+#print(time1)
+#print('the process spend time=:',str(1000*(passtime-nowtime))+'ms')
+#amatric=tf.truncated_normal([2,3,4,2],stddev=1)
+#a=tf.abs(2-3)
+#with tf.Session() as sess:
+#    b=sess.run(amatric)
+#    print('B.SHAPE:',amatric,'B IS:','\n',b)
+                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+
+
+
+
+#import numpy
+#import tensorflow as tf
+#a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a')
+#b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b')
+#
+#c = tf.matmul(a, b)/10
+#
+##c=tf.cast(c,bool)
+#c=tf.cast(c,tf.int32)
+#
+#sess = tf.Session()
+#print(sess.run(c))
+#rowconut=0
+#colconut=0
+#datamatrix=[]
+#data=xlrd.open_workbook('daletou.xls')#打开ＥＸＣＥＬ表格
+#
+#table=data.sheet_by_index(0)#索引
+#nrows=table.nrows#ＥＸＣＥＬ的总行数
+#ncols=table.ncols#ＥＸＣＥＬ的总列数
+#row=table.row_values(rowconut)#ＲＯＷ＝索引中的第Ｎ行
+#
+#
+#print(nrows,ncols)
+#
+####列列
+#colconut=0
+#col=table.col_values(colconut)
+#
+#daletou_time=np.mat(col).reshape([1,-1])
+#print(daletou_time.shape,daletou_time)
+
+
+'''
+此函数是把ＥＸＣＥＬ里面的第二列到第８列变成矩阵，存储起来
+也就是把大乐透的中奖号７个一行，一共１７５２期全部数据存
+成一个矩阵,shape=(1752,7)
+'''
+#a3=np.zeros(7).reshape(1,7)
+#for i in range(nrows):
+#    row1=table.row_values(i)#行到第i行
+#    a1=row1[1:]#选定彩票的７个号码
+#    a3=np.row_stack((a3,a1))#np.row_stack是增加一行
+#
+##存储矩阵
+#a3=np.delete(a3,0,axis=0)#删除初始化时的第一行全０
+#np.save("letou_number.npy",a3)#存储数据
+#np.save("letou_time.npy",daletou_time)#存储数据
+#b=np.load("letou_number.npy")
+#c=np.load("letou_time.npy")
+#print('load the letou_number=',b.shape,b)
+#print('load the letou_time=',c.shape,c)
+
+
+##大乐透概率的算法
+#'''
+#大乐透概率的算法
+#aa=35球选出５球的所有排序 C 35 5
+#bb=12球先出２球的所有排序
+#cc=彩票所有的排序
+#'''
+#aa=(math.factorial(35)/(math.factorial(35-5)*(math.factorial(5))))
+#bb=(math.factorial(12)/(math.factorial(12-2)*(math.factorial(2))))
+#cc=(aa*bb)
+#print('大乐透概率')
+#print('35球选出５球=',aa,'种排序')
+#print('12球先出２球=',bb,'种排序')
+#print('总共=',cc,'种排序')
+#print('中一注一等奖的概率＝',(1/cc),'%')
+#print('中一注３等奖的概率＝',(1/aa),'%')
+#print(math.factorial(3)/(math.factorial(3-2)*(math.factorial(2))))
+
+'''
+下面是把彩票的前五个号码做成字典形式
+
+'''
+#aflag=0
+#t3=np.zeros(35).reshape([1,35])
+#t1=[]
+#
+#for ii in range(nrows):#nrows
+#    bb=b[ii,:][:5]
+#    print(bb.shape,bb,ii)
+#    for i in range(1,36,1):#35个数
+#        for j in range(5):#从第一个数开始进来，和这里面的７个数对比，如果相等就１，不等为０
+#            if(i==bb[j]):
+#                t1.append(1)
+#                aflag=1#相等标志位
+#        if(aflag==0):
+#            t1.append(0)
+#        aflag=0
+#    print('check',t1)    
+#    t2=np.array(t1).reshape([1,35])
+#
+#    print('haha=t2',t2.shape,t2,ii) 
+#    t3=np.row_stack((t3,t2))
+#    t1=[]
+#np.save("front5.npy",t3)    
+##print(t1)                     
+#front5=np.load("front5.npy")        
+#print('把结果转成字典对应表格',front5.shape,front5)
+
+'''
+下面是把彩票的后两个号码做成字典形式
+
+'''
+#aflag1=0
+#t4=np.zeros(12).reshape([1,12])
+#t1=[]
+#
+#for ii in range(nrows):#nrows
+#    bb=b[ii,:][5:]
+##    print(bb)
+##    print(bb.shape,bb,ii)
+#    for i in range(1,13,1):#35个数
+#        for j in range(2):#从第一个数开始进来，和这里面的７个数对比，如果相等就１，不等为０
+#            if(i==bb[j]):
+#                t1.append(1)
+#                aflag1=1#相等标志位
+#        if(aflag1==0):
+#            t1.append(0)
+#        aflag1=0
+##    print('check',t1)    
+#    t2=np.array(t1).reshape([1,12])
+#
+##    print('haha=t2',t2.shape,t2,ii) 
+#    t4=np.row_stack((t4,t2))
+#    t1=[]
+#t4=np.delete(t4,0,0)    #删除第一行全０
+#np.save("back2.npy",t4)    
+##print(t1)                     
+#back2=np.load("back2.npy")        
+#print('把结果转成字典对应表格',back2.shape,back2)
+
+#
+#a=(np.random.randn(7).reshape(7,1)*10).T
+#print('a=',a)
+#b=tf.argmax(a,0)
+##0对列进行比较，１对行进行比较
+#
+#with tf.Session() as sess:
+#    print('argmax=',sess.run(tf.argmax(a,1)))
+##    print(b)
+#def dec(a):
+#    b=[]
+#    c=np.zeros(5).reshape(1,5)
+#    for i in range(5):
+#        for j in range(1,36,1):
+#            if(a[i,(j-1)]==1):
+#                b.append(j)
+#        b=np.array(b)
+#        c=np.row_stack((c,b))
+#        b=[]
+#    c=np.delete(c,0,0) 
+#    return c
+#
+#def comp(a,b):
+#    c=0
+#    for i in range(5):
+#        for j in range(5):
+#            if(a[0,i]==b[0,j]):#a里面的每一个都和Ｂ里面的５个数相比，
+#                c=c+1
+#    return c/5#计算相等的占总数的比率     
+#a=[[0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0]]
+##4,7,15,19,29
+#a2=[[0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0]]
+##a=np.array(a)
+##a2=np.array(a2)
+##a2=a2.reshape(2,35)
+##a=a.reshape(2,35)
+###print (a.shape)
+##
+##print(dec(a),dec(a2))
+##print(comp(dec(a),dec(a2)))
+#
+#a=np.load("caipiao_b")
+#print(a)
+
+
+#
+#
+#import ctypes
+#import imp
+#import sys
+#
+#def main():
+#  try:
+#    import tensorflow as tf
+#    print("TensorFlow successfully installed.")
+#    if tf.test.is_built_with_cuda():
+#      print("The installed version of TensorFlow includes GPU support.")
+#    else:
+#      print("The installed version of TensorFlow does not include GPU support.")
+#    sys.exit(0)
+#  except ImportError:
+#    print("ERROR: Failed to import the TensorFlow module.")
+#
+#  candidate_explanation = False
+#
+#  python_version = sys.version_info.major, sys.version_info.minor
+#  print("\n- Python version is %d.%d." % python_version)
+#  if not (python_version == (3, 5) or python_version == (3, 6)):
+#    candidate_explanation = True
+#    print("- The official distribution of TensorFlow for Windows requires "
+#          "Python version 3.5 or 3.6.")
+#  
+#  try:
+#    _, pathname, _ = imp.find_module("tensorflow")
+#    print("\n- TensorFlow is installed at: %s" % pathname)
+#  except ImportError:
+#    candidate_explanation = False
+#    print("""
+#- No module named TensorFlow is installed in this Python environment. You may
+#  install it using the command `pip install tensorflow`.""")
+#
+#  try:
+#    msvcp140 = ctypes.WinDLL("msvcp140.dll")
+#  except OSError:
+#    candidate_explanation = True
+#    print("""
+#- Could not load 'msvcp140.dll'. TensorFlow requires that this DLL be
+#  installed in a directory that is named in your %PATH% environment
+#  variable. You may install this DLL by downloading Microsoft Visual
+#  C++ 2015 Redistributable Update 3 from this URL:
+#  https://www.microsoft.com/en-us/download/details.aspx?id=53587""")
+#
+#  try:
+#    cudart64_80 = ctypes.WinDLL("cudart64_80.dll")
+#  except OSError:
+#    candidate_explanation = True
+#    print("""
+#- Could not load 'cudart64_80.dll'. The GPU version of TensorFlow
+#  requires that this DLL be installed in a directory that is named in
+#  your %PATH% environment variable. Download and install CUDA 8.0 from
+#  this URL: https://developer.nvidia.com/cuda-toolkit""")
+#
+#  try:
+#    nvcuda = ctypes.WinDLL("nvcuda.dll")
+#  except OSError:
+#    candidate_explanation = True
+#    print("""
+#- Could not load 'nvcuda.dll'. The GPU version of TensorFlow requires that
+#  this DLL be installed in a directory that is named in your %PATH%
+#  environment variable. Typically it is installed in 'C:\Windows\System32'.
+#  If it is not present, ensure that you have a CUDA-capable GPU with the
+#  correct driver installed.""")
+#
+#  cudnn5_found = False
+#  try:
+#    cudnn5 = ctypes.WinDLL("cudnn64_5.dll")
+#    cudnn5_found = True
+#  except OSError:
+#    candidate_explanation = True
+#    print("""
+#- Could not load 'cudnn64_5.dll'. The GPU version of TensorFlow
+#  requires that this DLL be installed in a directory that is named in
+#  your %PATH% environment variable. Note that installing cuDNN is a
+#  separate step from installing CUDA, and it is often found in a
+#  different directory from the CUDA DLLs. You may install the
+#  necessary DLL by downloading cuDNN 5.1 from this URL:
+#  https://developer.nvidia.com/cudnn""")
+#
+#  cudnn6_found = False
+#  try:
+#    cudnn = ctypes.WinDLL("cudnn64_6.dll")
+#    cudnn6_found = True
+#  except OSError:
+#    candidate_explanation = True
+#
+#  if not cudnn5_found or not cudnn6_found:
+#    print()
+#    if not cudnn5_found and not cudnn6_found:
+#      print("- Could not find cuDNN.")
+#    elif not cudnn5_found:
+#      print("- Could not find cuDNN 5.1.")
+#    else:
+#      print("- Could not find cuDNN 6.")
+#      print("""
+#  The GPU version of TensorFlow requires that the correct cuDNN DLL be installed
+#  in a directory that is named in your %PATH% environment variable. Note that
+#  installing cuDNN is a separate step from installing CUDA, and it is often
+#  found in a different directory from the CUDA DLLs. The correct version of
+#  cuDNN depends on your version of TensorFlow:
+#  
+#  * TensorFlow 1.2.1 or earlier requires cuDNN 5.1. ('cudnn64_5.dll')
+#  * TensorFlow 1.3 or later requires cuDNN 6. ('cudnn64_6.dll')
+#    
+#  You may install the necessary DLL by downloading cuDNN from this URL:
+#  https://developer.nvidia.com/cudnn""")
+#    
+#  if not candidate_explanation:
+#    print("""
+#- All required DLLs appear to be present. Please open an issue on the
+#  TensorFlow GitHub page: https://github.com/tensorflow/tensorflow/issues""")
+#
+#  sys.exit(-1)
+#
+#if __name__ == "__main__":
+#  main()
+
+
+
+
+#output_y=np.load("E:\\program\\ai\\aifirst\\some_data\\output_y.npy")
+#input_x=np.load("E:\\program\\ai\\aifirst\\some_data\\input_x.npy")
+#output_y=np.load("front5_train_label_data.npy")  
+#input_x=np.load("front5_train_input_data.npy")  
+#np.save("caipiao_b",b)
+#x=np.load("E:\\program\\ai\\aifirst\\caipiao_b.npy")
+#a=x[0].reshape(35,1)
+#print('this is output')
+#print(output_y[0].reshape(5,7)[0])
+#print(output_y[0].reshape(5,7)[1])
+#print(output_y[0].reshape(5,7)[2])
+#print(output_y[0].reshape(5,7)[3])
+#print(output_y[0].reshape(5,7)[4])
+##print(output_y[0].reshape(5,7)[5])
+##print(output_y[0].reshape(5,7)[6])
+#print('this is input')
+#print(input_x[0].reshape(5,7)[0])
+#print(input_x[0].reshape(5,7)[1])
+#print(input_x[0].reshape(5,7)[2])
+#print(input_x[0].reshape(5,7)[3])
+#print(input_x[0].reshape(5,7)[4])
+##print(input_x[0].reshape(5,7)[5])
+##print(input_x[0].reshape(5,7)[6])
+##print(a[1],a[2],a[0])
+#icount=80
+#batch_y=output_y[icount:(50+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+#batch_x=input_x[icount:(50+icount):1]#第Ｎ行
+#print('this is x in')
+#print(batch_x[0].reshape(5,7)[0])
+#print(batch_x[0].reshape(5,7)[1])
+#print(batch_x[0].reshape(5,7)[2])
+#print(batch_x[0].reshape(5,7)[3])
+#print(batch_x[0].reshape(5,7)[4])
+#
+#print('this is y output')
+#print(batch_y[0].reshape(5,7)[0])
+#print(batch_y[0].reshape(5,7)[1])
+#print(batch_y[0].reshape(5,7)[2])
+#print(batch_y[0].reshape(5,7)[3])
+#print(batch_y[0].reshape(5,7)[4])
+
+
+#print('this is x in')
+#print(batch_x[0])
+#
+#
+#print('this is y output')
+#print(batch_y[0])
+
+
+
+#a=np.arange(25)
+#print (a.reshape(5,5))
+
+#output_y=np.load("E:\\program\\ai\\aifirst\\some_data\\output_y.npy")
+#print(output_y.shape)
+#a=np.argmax(output_y,1)
+#print(a.reshape(-1,5,5)+1)
+#print(output_y[0].reshape(7,5))
+#print(output_y[1].reshape(7,5))
+#print(output_y[2].reshape(7,5))
+#print(output_y[3].reshape(7,5))
+
+
+
+
+#from tensorflow import keras
+
+#x2=np.linspace(-0.5,0.5,200)
+#x_data=np.linspace(-0.5,0.5,200)[:,np.newaxis]
+#y_data=np.square(x_data)+(np.random.random(x_data.shape))#plt.plot(x_data,y_data,'r-')
+#print(y_data)
+##x=tf.placeholder(tf.float32,[1,None])
+##y=tf.placeholder(tf.float32,[1,None])
+#
+#plt.scatter(x_data,y_data)
+#plt.plot()
+
+
+#从数组元组中选出第１，第２，第３，和第四大的数
+#a=np.arange(25).reshape(5,5)
+#a=np.mat(a)
+#print(a[:,1])
+#
+#
+#nums=np.random.random(12)*100
+#nums=nums.tolist()
+#print(nums)
+#maxnumber=max(nums)
+#print(nums.index(maxnumber))
+#temp=[]
+#for i in range(3):
+#    temp.append(nums.index(max(nums)))
+#    nums[nums.index(max(nums))]=0
+##temp.sor
+#print(temp)
+
+
+
+
+#分析导数4
+#x_data=np.linspace(-0,10,10)
+#v=5
+#i=v/x_data
+#
+#title_word=('squar','two')
+#plt.plot(x_data,i,'g-')
+##plt.plot(x_data,x_data**3,'r-')
+##plt.plot(x_data,np.cos(x_data),'r-')
+##plt.plot(x_data,np.tan(x_data),'g-')
+#plt.grid(2)
+#plt.xlabel('x axis')
+#plt.ylabel('y axis')
+#plt.title('this is a number plot')
+#plt.legend(title_word)
+
+#股市专用
+
+#print(ts.__version__)
+##df=ts.
+##df=ts.get_hist_data('000001', start='2010-01-01', end='2018-12-3') #两个日期之间的前复权数据
+#df=ts.get_index()
+#df.to_excel('E:\\program\\ai\\aifirst\\stock1\\index.xlsx')
+#
+
+#
+#import keras
+#from keras.models import sequential
+##是一系列网络层按顺序构成的战，
+#model=sequential()
+#from keras.layers import Dense,Activation
+##将一些网络层通过.add()堆叠起来，就构成了一个模型
+#model.add(Dense(units=64,imput_dim=100))
+#model.add(Activation("relu"))
+#model.add(Dense(units=10))
+#model.add(Activation("softmax"))
+##完成模型建立后，我们需要用.compile()的方法来编译模型，下面一种是简单，另一种详细
+#model.compile(loss='categorical_crossentropy',optimizer='sgd',metrics=['accuracy'])
+#from keras.optimizers import SGD
+#model.compile(loss='categorical_crossentropy',optimizer=SGD(lr=0.01,momentum=0.9,nesterov=True))
+#
+##完成模型编译后，我们用训练数据，按batch进行一定次数的迭代来训练网络
+#model.fit(x_train,y_train,epochs=5,batch_size=32)
+#model.train_on_batch(x_train,y_train)
+##训练完成之后，我们需要进行评估，来看模型的指标是不是符合我们的要求
+#loss_and_metrics=model.evaluate(x_test,y_test,batch_size=128)
+##我们可以使用我们的模型，对新的数据进行预测
+#classes=model.predict(x_test,batch_size=128)
+
+
+
+
+
+
+
+
+
+
+
+
