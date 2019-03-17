@@ -1,0 +1,370 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 28 22:02:45 2018
+
+@author: Administrator
+"""
+
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+import os#系统操作
+import time#时间
+import webbrowser#网页
+import pandas as pd
+import re
+import math
+from PIL import Image
+import cv2
+import sklearn
+#import n1 
+import xlrd
+
+from matplotlib.font_manager import FontProperties #画图时显示中文专用
+#import mpl_finance as mpf
+from matplotlib.pylab import date2num
+import matplotlib
+import datetime
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+
+
+import matplotlib.dates as mdate
+
+rowconut=0
+colconut=0
+datamatrix=[]
+np.set_printoptions(threshold=np.inf)#显示一个矩阵所有的数字
+
+
+def dp(x):
+    x=(x.reshape(1,-1)).tolist()[0]
+    x.reverse()#把数据反个向，因为第一行是最新的数据，最后一行是以前的，
+    return x
+
+#import tushare as ts
+def date(dates):#定义转化日期戳的函数,dates为日期戳
+    delta=datetime.timedelta(days=dates)
+    today=datetime.datetime.strptime('1899-12-30','%Y-%m-%d')+delta#将1899-12-30转化为可以计算的时间格式并加上要转化的日期戳
+    return datetime.datetime.strftime(today,'%Y-%m-%d')#制定输出日期的格式
+
+
+font = FontProperties(fname=r"c:\windows\fonts\simsun.ttc", size=14)  #画图时显示中文专用
+chinese =matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simkai.ttf')
+
+'''
+下面的　exch_onehot是用来把一个个数单独提取出来，主要是ＯＮＥＨＯＴ专用的
+'''
+def exch_onehot(a):
+    be=[]
+    #a=[921]
+    qian=int(a[0]/1000)
+    be.append(qian)
+    shubai=a[0]-qian*1000
+    bai=int(shubai/100)
+    be.append(bai)
+    shushi=shubai-bai*100
+    si=int(shushi/10)
+    be.append(si)
+    ge=int(a[0]%10)
+    be.append(ge)
+    return(be)
+#stock_num='000623吉林敖东'#吉林敖东
+#stock_num='601828 美凯龙'#美凯龙
+#stock_num='002510天汽模'#天汽模
+stock_num='002627宜昌交运'#宜昌交运
+'''
+此处的股票数据是来自网易财经下载得到，再转成ＸＬＳＸ的格式。其中还要处理一下中间的
+Ｎone项，全选中，删除全行再用，不然里面有很多Ｎone 0的值
+'''
+
+nowtime=time.time()#开始计时
+da_data=xlrd.open_workbook('e:/program/ai/aifirst/stock/002627.xlsx')#打开ＥＸＣＥＬ表格 daletou_lable
+alltable=da_data.sheet_by_index(0)#索引 #table是x-input data
+nrows=alltable.nrows#ＥＸＣＥＬ的总行数
+ncols=alltable.ncols#ＥＸＣＥＬ的总列数
+#print((alltable.row_values(2))[0:9])
+
+a3=np.zeros(12).reshape(1,12)#做一个变量存Ｘ信号
+a33=np.zeros(12).reshape(1,12)#做一个变量存y信号
+
+
+'''
+###############把年份从数据中提取出来，最后用来显示在图中#############
+'''
+years=np.zeros(1).reshape(1,1)#做一个变量存Ｘ信号
+for i in range(1,nrows,1):
+    row1=((alltable.row_values(i))[0])# 第i行的０个数是年份
+    row1=date(row1)
+#    print(row1)
+    years=np.row_stack((years,row1))#np.row_stack是增加一行
+years=np.delete(years,0,axis=0)#删除初始化时的第4列　前收盘	    
+
+#print(years)
+
+###################################################################
+'''
+下面是把ＥＸＣＥＬ中的数据处理成矩阵，切掉不要的那些项最后得到：
+　收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+　　　３　　４　　　５　　　６　　　10     １１　　　１４
+'''
+
+#下面是从第二行开始，按顺序读完整个表格，０到９个数字
+for i in range(1,nrows,1):
+    row1=((alltable.row_values(i))[3:15])# table是x-input data ,行到第i行的2－９个数字
+    row2=((alltable.row_values(i))[3:15])#table是y-output data ,行到第i行的2－９个数字
+
+    #下面是把字符变成能用的数字　如果不处理，后面他是字符，不是数字
+    a1=[]
+    a11=[]
+    n1=0
+#    print('row1',row1[0])
+#    print(row1[0]-1)
+    for n1 in row1:
+        a1.append((float(n1)));
+    a1=np.mat(a1)
+    #下面是把字符变成能用的数字
+    n=0
+    for n in row2:
+        a11.append((float(n)));
+    a11=np.mat(a11)
+#    print(a11)
+    a3=np.row_stack((a3,a1))#np.row_stack是增加一行
+    a33=np.row_stack((a33,a11))#np.row_stack是增加一行 
+#print('years,a33=',years.shape,a33.shape)
+#a33=np.column_stack((years,a33))#np.row_stack是增加列
+#收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+#　３　　４　　　５　　　６　　　10     １１　　　１４
+x_7data=np.delete(a33,0,axis=0)#删除初始化时的全０行
+
+x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　前收盘	
+x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　涨跌额	
+x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　涨跌幅	
+x_7data=np.delete(x_7data,6,axis=1)#删除初始化时的第4列　成交金额	
+x_7data=np.delete(x_7data,6,axis=1)#删除初始化时的第4列　总市值	
+
+#x_7data=np.column_stack((years,x_7data))#np.row_stack是增加列　增加时间日期
+#print(x_7data)
+
+
+y_7data=np.delete(a3,0,axis=0)#删除初始化时的全０行
+y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,前收盘	
+y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,涨跌额
+y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,涨跌幅	
+y_7data=np.delete(y_7data,6,axis=1)##删除多出的第１列,成交金额
+y_7data=np.delete(y_7data,6,axis=1)##删除多出的第１列,总市值	
+
+#y_7data=np.column_stack((years,y_7data))#np.row_stack是增加列　增加时间日期
+
+#时间日期　收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+#　０　　　　３　　４　　　５　　　６　　　10     １１　　　１４
+
+#print('x_7data,y_7data',x_7data.shape,y_7data.shape,x_7data,y_7data)
+
+#input_x 输入  output_y输出
+'''
+此处是把每个特征值都单独提取出来，收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+'''
+close=y_7data[:,0]#拿到你想要的一列，收盘价
+high=y_7data[:,1]#拿到你想要的一列，最高价
+low=y_7data[:,2]#拿到你想要的一列，最低价
+start=y_7data[:,3]#拿到你想要的一列，开盘价
+ex=y_7data[:,4]#拿到你想要的一列，换手率
+vol=y_7data[:,5]#拿到你想要的一列，成交量
+total=y_7data[:,6]#拿到你想要的一列，流通市值
+
+'''
+此处把Ｘ的最后一行删除，Ｙ的第一行删除，相当于　Ｘ的第一行对应Ｙ的第二行，以些类推……
+'''
+x7data_row=x_7data.shape[0]
+input_x=np.delete(x_7data,x7data_row-1,axis=0)#删除x的最后一行，相当于１对Ｙ的２
+output_y=np.delete(close,0,axis=0)#删除Ｙ的第一行，相当于Ｘ的结果
+#x=np.delete(x_7data,x7data_row-1,axis=0)#删除x的最后一行，相当于１对Ｙ的２
+#y=np.delete(close,0,axis=0)#删除Ｙ的第一行，相当于Ｘ的结果
+
+#y=y_7data[:,5]#拿到你想要的一列，比如收盘价
+#x=y_7data[:,3]#拿到你想要的一列，比如收盘价
+#print('b',b.shape,b[3])
+#print(y_7data.shape,y_7data[1])
+####################下面是把股市数据做成图表显示出来########################
+'''
+#db是把矩阵处理成list，并且反向，由于excel的值是反的
+'''
+high=np.delete(high,0,axis=0)
+close=np.delete(close,0,axis=0)
+start=np.delete(start,0,axis=0)
+ex=np.delete(ex,0,axis=0)
+vol=np.delete(vol,0,axis=0)
+
+high=dp(high)
+close=dp(close)
+start=dp(start)
+ex=dp(ex)
+vol=dp(vol)
+#y=dp(y)
+#y=(y.reshape(1,-1)).tolist()[0]
+#y.reverse()#把数据反个向，因为第一行是最新的数据，最后一行是以前的，
+ee=y_7data.shape[0]+1
+x=np.arange(1.0,ee,1.0)
+
+#把时间变成１行Ｎ列的list数据
+years=np.delete(years,0,axis=0)
+years=(years.reshape(1,-1)).tolist()[0]
+years.reverse()
+legend=('start','close')
+#prop={‘size’:6}
+#把字符串变成时间列表，作为Ｘ轴显示时间，注意字符有：'%Y-%m-%d'或' '%Y/%m/%d'
+xs = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in years]
+#print('xs',xs[0])
+plt.rcParams['savefig.dpi'] = 300 #图片像素
+plt.rcParams['figure.dpi'] = 190 #分辨率
+#plt.scatter(xs,y,s=1,marker=',',c='r')
+#plt.scatter(xs,start,marker='^',s=1)
+#plt.scatter(xs,close,marker='^',s=3,c='r')
+plt.plot(xs,start,'b-',LineWidth=0.5)
+#plt.plot(xs,close,'b-',LineWidth=0.5)
+plt.xticks(rotation=45)
+plt.xlabel('时间',fontproperties=font)
+plt.ylabel('股票价格',fontproperties=font)
+plt.title('股票代码:'+stock_num,fontproperties=font)
+plt.legend(legend)
+#plt.legend(prop=chinese)
+
+plt.grid()
+plt.show()
+
+print('x_7data,y_7data',x_7data.shape,y_7data.shape)
+
+#input_x 输入  output_y输出
+#input_x=imput_x
+###############################ＬＴＳＭ处理###################################
+#n_inputs=1#输入一行有多少个数据
+#max_row=35#输入有多少行
+#batch=input_x.shape[0]
+batch=1738
+n_inputs=7#输入一行有多少个数据
+max_row=1#输入有多少行
+lstm_size=100#100个ＬＴＳＭ层　隐藏层单元ＢＬＯＣＫ
+n_classes=1#输出多少个分类
+batch_size=batch #第一批有多少个样本，
+n_batch=input_x.shape[0]//batch_size
+#n_batch_test=front5_test_input_data.shape[0]//batch_size
+with tf.name_scope('input'):
+    with tf.name_scope('x-input'):
+        x=tf.placeholder(tf.float32,[None,None])
+    with tf.name_scope('y-input'):
+        y=tf.placeholder(tf.float32,[None,1])
+with tf.name_scope('weight'):
+    weights=tf.Variable(tf.truncated_normal([lstm_size,n_classes],stddev=0.1))
+with tf.name_scope('biases'):
+    biases=tf.Variable(tf.constant(0.1,shape=[n_classes]))
+
+
+def RNN(X,weights,biases):
+    
+#    with tf.name_scope('lstm'):
+#        with tf.name_scope('lstm-input'):
+    inputs=tf.reshape(X,[-1,max_row,n_inputs])#n,1,35
+#        with tf.name_scope('lstm-cell'):
+            #
+#            lstm_cell=tf.nn.rnn_cell.BasicLSTMCell(lstm_size)
+    lstm_cell=tf.nn.rnn_cell.LSTMCell(lstm_size)
+#        with tf.name_scope('lstm-final_state'):
+    outputs,final_state=tf.nn.dynamic_rnn(lstm_cell,inputs,dtype=tf.float32)
+        
+#        with tf.name_scope('lstm-results'):
+    ooo=tf.matmul(final_state[1],weights)+biases
+    results=tf.nn.relu(tf.matmul(final_state[1],weights)+biases)
+            
+    return ooo,results
+
+
+with tf.name_scope('LSTM'):
+    oo,prediction=RNN(x,weights,biases)
+    with tf.name_scope('entropy'):
+        cross_entropy=tf.reduce_mean(np.square(prediction-y))        
+#        cross_entropy=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=y))
+        tf.summary.scalar('cross_entropy',cross_entropy)
+    with tf.name_scope('optimizer'):    
+            train_step=tf.train.GradientDescentOptimizer(0.0001).minimize(cross_entropy)
+#GradientDescentOptimizer 
+#AdagradOptimizer 
+#AdagradDAOptimizer 
+#MomentumOptimizer 
+#AdamOptimizer 
+#FtrlOptimizer 
+#RMSPropOptimizer            
+
+with tf.name_scope('accuracy'):        
+    with tf.name_scope('correct'):        
+        correct_prediction=tf.equal(tf.argmax(y,1),tf.argmax(prediction,1))
+        #axis1=row  the max number of y beetwen max nummber of prediction ,isn't equal?
+        #if they has the same value,then correct=1,other wise,correct=0
+
+    with tf.name_scope('acc'):
+        accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
+#        accuracy=tf.reduce_mean(correct_prediction)
+        tf.summary.scalar('accuracy',accuracy)
+merged=tf.summary.merge_all()     
+init=tf.global_variables_initializer()
+saver=tf.train.Saver()#模型保存用
+
+'''
+下面二行代码是开ＧＰＵ，设定为显存占用百分比
+'''
+#gpuConfig = tf.ConfigProto(allow_soft_placement=True)
+#gpuConfig.gpu_options.per_process_gpu_memory_fraction = 0.3
+#config = gpuConfig
+'''
+下面三行代码是关掉ＧＰＵ，开启ＣＰＵ
+'''
+#os.environ['TF_CPP_MIN_LOG_LEVEL']='3' #Disable Tensorflow debugging information
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1' #Set GPU device -1
+perdata=batch
+#somedat=[]
+with tf.Session() as sess:
+
+    sess.run(init)
+    train_writer=tf.summary.FileWriter('E:\\program\\ai\\aifirst\\stock',sess.graph)
+    for epoch in range(1500):
+        icount=0
+            
+        for i in range(n_batch):
+            batch_y=output_y[icount:(perdata+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+            batch_x=input_x[icount:(perdata+icount):1]#第Ｎ行
+
+            icount=icount+perdata
+
+            summary,_=sess.run([merged,train_step],feed_dict={x:batch_x,y:batch_y})
+#            print('prediction=',prediction)
+#            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+        train_writer.add_summary(summary,epoch)
+        icount=0
+        epoch1=epoch
+        for i in range(n_batch):
+            batch_y2=output_y[icount:(perdata+icount):1]
+            batch_x2=input_x[icount:(perdata+icount):1]
+    
+            icount=icount+perdata            
+            b=sess.run(prediction,feed_dict={x:batch_x2,y:batch_y2})
+
+            o,acc=sess.run([oo,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+#            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+#            train_writer.add_summary(summary,i)
+        print('股票测试数据，第',epoch+1,'次精度:=',acc*100,'%',o[3])
+#        print(np.load("E:\\program\\ai\\aifirst\\caipiao_b.npy"))
+    saver.save(sess,'stock/stock_modle1')        
+
+
+
+
+
+
+
+
