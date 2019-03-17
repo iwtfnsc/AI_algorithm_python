@@ -1,0 +1,707 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 28 22:02:45 2018
+step1:get the data
+step2:process the data  future value  output
+step3:data normalization
+step4:lstm code
+@author: Administrator
+"""
+
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+import os#系统操作
+import time#时间
+import webbrowser#网页
+import pandas as pd
+import re
+import math
+from PIL import Image
+import cv2
+import sklearn
+#import n1 
+import xlrd
+
+from matplotlib.font_manager import FontProperties #画图时显示中文专用
+#import mpl_finance as mpf
+from matplotlib.pylab import date2num
+import matplotlib
+import datetime
+import tensorflow as tf
+from mpl_toolkits.mplot3d import Axes3D#3D用
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import numpy as np#ＮＵＭＰＹ用
+from matplotlib import cm#画图里面的
+
+
+import matplotlib.dates as mdate
+
+rowconut=0
+colconut=0
+datamatrix=[]
+np.set_printoptions(threshold=np.inf)#显示一个矩阵所有的数字
+
+
+def dp(x):
+    x=(x.reshape(1,-1)).tolist()[0]
+    x.reverse()#把数据反个向，因为第一行是最新的数据，最后一行是以前的，
+    return x
+
+#import tushare as ts
+def date(dates):#定义转化日期戳的函数,dates为日期戳
+    delta=datetime.timedelta(days=dates)
+    today=datetime.datetime.strptime('1899-12-30','%Y-%m-%d')+delta#将1899-12-30转化为可以计算的时间格式并加上要转化的日期戳
+    return datetime.datetime.strftime(today,'%Y-%m-%d')#制定输出日期的格式
+
+
+font = FontProperties(fname=r"c:\windows\fonts\simsun.ttc", size=14)  #画图时显示中文专用
+chinese =matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simkai.ttf')
+
+'''
+下面的　exch_onehot是用来把一个个数单独提取出来，主要是ＯＮＥＨＯＴ专用的
+'''
+def exch_onehot(a):
+    be=[]
+    #a=[921]
+    qian=int(a[0]/1000)
+    be.append(qian)
+    shubai=a[0]-qian*1000
+    bai=int(shubai/100)
+    be.append(bai)
+    shushi=shubai-bai*100
+    si=int(shushi/10)
+    be.append(si)
+    ge=int(a[0]%10)
+    be.append(ge)
+    return(be)
+
+'''归一化数据,(x-u)/s 数据－平均值　／　标准差 z-score规范化(或零－均值规范化)'''
+def normalization_data(x,n_clo):
+
+    for i in range(n_clo):
+        a=x[:,i]#取出Ｘ的第n列数据
+        a=(a-np.mean(a))/(np.std(a))
+        x[:,i]=a
+    return x   
+#    print('befor',aa[0:20,1])
+#    print('after',x[0:20,1])    
+#    a=x[:,0]#取出Ｘ的第一列数据
+##    print('befor',a[1])
+#    a=(a-np.mean(a))/(np.std(a))
+##    print('after',a[1])
+
+#min-max标准化（Min-Max Normalization）
+def min_max_normalization_data(x,n_clo):
+
+    for i in range(n_clo):
+        a=x[:,i]#取出Ｘ的第n列数据
+        a=(a-np.min(a))/(np.max(a)-np.min(a))
+        x[:,i]=a
+    return x   
+
+
+def output_change_01(x,y):
+    a=[]
+    start=x[:,3]#拿到你想要的一列，开盘价
+    num=len(start)
+    for i in range(num):
+        if((start[i]==y[i])|(start[i]>y[i])):#股价下跌或没涨时
+            b=0
+        else:#股价上涨时
+            b=1
+        a.append(b)    
+    a=np.mat(a)
+    a=a.reshape((-1,1))
+    return a    
+
+def myplot(x,years):
+    
+#    years=np.delete(years,0,axis=0)
+    x=dp(x)
+#    close=dp(close)
+#    start=dp(start)
+#    ex=dp(ex)
+#    vol=dp(vol)
+    #y=dp(y)
+    #y=(y.reshape(1,-1)).tolist()[0]
+    #y.reverse()#把数据反个向，因为第一行是最新的数据，最后一行是以前的，
+#    ee=y_7data.shape[0]+1
+#    x=np.arange(1.0,ee,1.0)
+    
+    #把时间变成１行Ｎ列的list数据
+#    years=np.delete(years,0,axis=0)
+    years=(years.reshape(1,-1)).tolist()[0]
+    years.reverse()
+    legend=('train_data','test_data')
+    #prop={‘size’:6}
+    #把字符串变成时间列表，作为Ｘ轴显示时间，注意字符有：'%Y-%m-%d'或' '%Y/%m/%d'
+    xs = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in years]
+    #print('xs',xs[0])
+    plt.rcParams['savefig.dpi'] = 300 #图片像素
+    plt.rcParams['figure.dpi'] = 100 #分辨率
+    #plt.scatter(xs,y,s=1,marker=',',c='r')
+    #plt.scatter(xs,start,marker='^',s=1)
+    #plt.scatter(xs,close,marker='^',s=3,c='r')
+    plt.plot(xs,x,'b-',LineWidth=0.5)
+    #plt.plot(xs,close,'b-',LineWidth=0.5)
+    plt.xticks(rotation=45)
+    plt.xlabel('时间',fontproperties=font)
+    plt.ylabel('股票价格',fontproperties=font)
+    plt.title('股票代码:'+stock_num,fontproperties=font)
+    plt.legend(legend)
+    #plt.legend(prop=chinese)
+    
+    plt.grid()
+    plt.show()
+    
+#stock_num='000623吉林敖东'#吉林敖东
+#stock_num='601828 美凯龙'#美凯龙
+#stock_num='002510天汽模'#天汽模
+stock_num='002627宜昌交运'#宜昌交运
+'''
+此处的股票数据是来自网易财经下载得到，再转成excel 2007ＸＬＳＸ的格式。其中还要处理一下中间的
+Ｎone项，全选中，删除全行再用，不然里面有很多Ｎone 0的值
+'''
+
+nowtime=time.time()#开始计时
+da_data=xlrd.open_workbook('e:/program/ai/aifirst/stock/002627.xlsx')#打开ＥＸＣＥＬ表格 daletou_lable
+alltable=da_data.sheet_by_index(0)#索引 #table是x-input data
+nrows=alltable.nrows#ＥＸＣＥＬ的总行数
+ncols=alltable.ncols#ＥＸＣＥＬ的总列数
+#print((alltable.row_values(2))[0:9])
+
+a3=np.zeros(12).reshape(1,12)#做一个变量存Ｘ信号
+a33=np.zeros(12).reshape(1,12)#做一个变量存y信号
+
+
+   
+
+#print(years)
+'''
+原始的文件抬头
+日期	股票代码	名称	收盘价	最高价	最低价	开盘价	前收盘	涨跌额	涨跌幅	换手率	成交量	成交金额	总市值	流通市值
+'''
+###################################################################
+'''
+下面是把ＥＸＣＥＬ中的数据处理成矩阵，切掉不要的那些项最后得到：
+　收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+　　　３　　４　　　５　　　６　　　10     １１　　　１４
+   先做一个７列矩阵，然后把里面需要的数选出来，然后把每一个矩阵
+   增加一行
+'''
+
+#下面是从第二行开始，按顺序读完整个表格，０到９个数字
+for i in range(1,nrows,1):
+    row1=((alltable.row_values(i))[3:15])# table是x-input data ,行到第i行的2－９列个数字
+    row2=((alltable.row_values(i))[3:15])#table是y-output data ,行到第i行的2－９列个数字
+
+    #下面是把字符变成能用的数字　如果不处理，后面他是字符，不是数字
+    a1=[]
+    a11=[]
+    n1=0
+#    print('row1',row1[0])
+#    print(row1[0]-1)
+    for n1 in row1:
+        a1.append((float(n1)));
+    a1=np.mat(a1)
+    #下面是把字符变成能用的数字
+    n=0
+    for n in row2:
+        a11.append((float(n)));
+    a11=np.mat(a11)
+#    print(a11)
+    a3=np.row_stack((a1,a3))#np.row_stack是增加一行
+    a33=np.row_stack((a11,a33))#np.row_stack是增加一行 
+#print('years,a33=',years.shape,a33.shape)
+#a33=np.column_stack((years,a33))#np.row_stack是增加列
+#收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+#　３　　４　　　５　　　６　　　10     １１　　　１４
+x_7data=np.delete(a33,(a33.shape[0]-1),axis=0)#删除初始化时的全０行，因为我是把数据从后向前叠，所以在最后一行
+#x_7data=np.delete(a33,(a33.shape[0]-1),axis=0)#删除初始化时的全０行，因为我是把数据从后向前叠，所以在最后一行
+
+x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　前收盘	
+#x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　涨跌额	
+#x_7data=np.delete(x_7data,4,axis=1)#删除初始化时的第4列　涨跌幅	
+#x_7data=np.delete(x_7data,7,axis=1)#删除初始化时的第4列　成交金额	
+#x_7data=np.delete(x_7data,7,axis=1)#删除初始化时的第4列　成交金额
+#x_7data=np.delete(x_7data,7,axis=1)#删除初始化时的第4列　	总市值	
+#x_7data=np.delete(x_7data,7,axis=1)#删除初始化时的第4列　流通市值
+#x_7data=np.column_stack((years,x_7data))#np.row_stack是增加列　增加时间日期
+#print(x_7data)
+
+
+y_7data=np.delete(a3,(a3.shape[0]-1),axis=0)#删除初始化时的全０行，因为我是把数据从后向前叠，所以在最后一行
+#y_7data=np.delete(a3,0,axis=0)#Ｘ删除最后一行，Ｙ删除第一行，YEAR删除第一行
+y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,前收盘	
+#y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,涨跌额
+#y_7data=np.delete(y_7data,4,axis=1)##删除多出的第１列,涨跌幅	
+#y_7data=np.delete(y_7data,7,axis=1)##删除多出的第１列,成交金额
+#y_7data=np.delete(y_7data,7,axis=1)##删除多出的第１列,成交金额	
+#y_7data=np.delete(y_7data,7,axis=1)##删除多出的第１列,总市值	
+#y_7data=np.delete(y_7data,7,axis=1)##删除多出的第１列,流通市值	
+'''
+下面是输出Ｙ=开盘价－收盘价　　
+'''
+close=y_7data[:,0]#拿到你想要的一列，收盘价
+train_data_y1=close
+train_data_x1=x_7data
+train_data_y2=output_change_01(train_data_x1,train_data_y1)#把输出变成０１信号
+
+
+
+''' 此方案只留涨跌幅，换手率，成交额　'''
+'''先删除收盘价	最高价	最低价	开盘价	涨跌额'''
+#train_data_x1=np.delete(train_data_x1,0,axis=1)##删除多出的第１列,涨跌幅
+#train_data_x1=np.delete(train_data_x1,0,axis=1)##删除多出的第１列,涨跌幅
+#train_data_x1=np.delete(train_data_x1,0,axis=1)##删除多出的第１列,涨跌幅
+#train_data_x1=np.delete(train_data_x1,0,axis=1)##删除多出的第１列,涨跌幅
+#train_data_x1=np.delete(train_data_x1,0,axis=1)##删除多出的第１列,涨跌幅
+#'''删除成交量'''
+#train_data_x1=np.delete(train_data_x1,2,axis=1)##删除多出的第１列,涨跌幅
+#'''删除总市值	流通市值'''	
+#train_data_x1=np.delete(train_data_x1,3,axis=1)##删除多出的第１列,涨跌幅
+#train_data_x1=np.delete(train_data_x1,3,axis=1)##删除多出的第１列,涨跌幅
+
+
+
+
+#y_7data=np.column_stack((years,y_7data))#np.row_stack是增加列　增加时间日期
+
+#时间日期　收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+#　０　　　　３　　４　　　５　　　６　　　10     １１　　　１４
+
+#print('x_7data,y_7data',x_7data.shape,y_7data.shape,x_7data,y_7data)
+
+#train_data_x 输入  train_data_y输出
+#x删除最后一行，Ｙ删除第一行，YEAR删除第一行
+
+nn_row,nn_col=train_data_x1.shape
+#print('nncol',nn_col)
+'''
+###############把年份从数据中提取出来，最后用来显示在图中#############
+'''
+years=np.zeros(1).reshape(1,1)#做一个变量存Ｘ信号
+for i in range(1,nrows,1):
+    row1=((alltable.row_values(i))[0])# 第i行的０个数是年份
+    row1=date(row1)
+#    print(row1)
+    years=np.row_stack((row1,years))#np.row_stack是增加一行
+years=np.delete(years,(a3.shape[0]-1),axis=0)#删除最后一行
+
+'''
+Ｘ删除最后一行，Ｙ删除第一行，YEAR删除第一行
+'''
+years=np.delete(years,0,axis=0)#YEAR删除第一行
+train_data_x1=np.delete(train_data_x1,(train_data_x1.shape[0]-1),axis=0)#Ｘ删除最后一行
+train_data_y2=np.delete(train_data_y2,0,axis=0)#Ｙ删除第一行
+
+
+'''
+此处是把每个特征值都单独提取出来，收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值
+'''
+close=y_7data[:,0]#拿到你想要的一列，收盘价
+high=y_7data[:,1]#拿到你想要的一列，最高价
+low=y_7data[:,2]#拿到你想要的一列，最低价
+start=y_7data[:,3]#拿到你想要的一列，开盘价
+ex=y_7data[:,4]#拿到你想要的一列，换手率
+vol=y_7data[:,5]#拿到你想要的一列，成交量
+total=y_7data[:,6]#拿到你想要的一列，流通市值
+
+
+
+
+'''
+此处把Ｘ的最后一行删除，Ｙ的第一行删除，相当于　Ｘ的第一行对应Ｙ的第二行，以些类推……
+x前一天的７个输入数据对应的结果是今天的输出收盘价
+'''
+
+
+#########下面把数据分成训练集６０%，测试集４０%#############################
+total_rate=int(train_data_x1.shape[0])#总行数
+train_first_rate=1600
+#data_rate=int(train_first_rate)#把６成变成整数
+#data_rate=total_rate-data_rate#总行数减去６成的，＝ＴＥＳＴ的数据，
+#print('data_rate',data_rate)
+
+#训练数据是１４００个
+train_years=years[0:train_first_rate]#
+train_data_x=train_data_x1[0:train_first_rate]
+train_data_y=train_data_y2[0:train_first_rate]
+print('333333333332',train_years[1400-1],len(train_years),train_data_x[45],train_data_y[45],train_years[45])
+
+#myplot(train_data_y,train_years)
+print('train shape years,datax,datay',train_years.shape,train_data_x.shape,train_data_y.shape)
+
+'''normalization_data标准化数据，数据归一化'''
+train_data_x=normalization_data(train_data_x,nn_col)
+#train_data_x=min_max_normalization_data(train_data_x,11) 
+#测试数据是１４００以后的，也就是最新的几百数据用来测试
+#print('total_rate',total_rate,total_rate-train_first_rate)
+test_years=years[train_first_rate:total_rate]
+test_data_x=train_data_x1[train_first_rate:total_rate]
+test_data_y=train_data_y2[train_first_rate:total_rate]
+#print('65656565656',len(test_years),len(years),test_data_x[43],test_data_y[43],test_years[43])
+'''normalization_data标准化数据，数据归一化'''
+test_data_x=normalization_data(test_data_x,nn_col)
+#test_data_x=min_max_normalization_data(test_data_x,11)
+print('test shape:years,datax,datay \33[0m',test_years.shape,test_data_x.shape,test_data_y.shape)
+print('\33[34m 收盘价	最高价	最低价	开盘价　换手率  成交量　流通市值 \33[0m')
+abcd=1
+print('train_years,test_years 1',test_data_y.shape)
+print('train_data_y,test_data_y 1',train_data_x[abcd],train_data_y[abcd],train_years[abcd])
+abcd=2
+print('train_years,test_years 1',test_data_x[abcd],test_data_y[abcd],test_years[abcd])
+print('train_data_y,test_data_y 1',train_data_x[abcd],train_data_y[abcd],train_years[abcd])
+abcd=3
+print('train_years,test_years 1',test_data_x[abcd],test_data_y[abcd],test_years[abcd])
+print('train_data_y,test_data_y 1',train_data_x[abcd],train_data_y[abcd],train_years[abcd])
+abcd=4
+print('train_years,test_years 1',test_data_x[abcd],test_data_y[abcd],test_years[abcd])
+print('train_data_y,test_data_y 1',train_data_x[abcd],train_data_y[abcd],train_years[abcd])
+
+#train_years,test_years (1043, 1) (695, 1)
+#train_data_x,test_data_x (1043, 7) (695, 7)
+#train_data_y,test_data_y (1043, 1) (695, 1)
+####################
+train_data_x=train_data_x
+train_data_y=train_data_y
+
+#print('测试数据，第',train_data_y,train_data_x)
+####################下面是把股市数据做成图表显示出来########################
+
+'''
+#db是把矩阵处理成list，并且反向，由于excel的值是反的
+'''
+#high=np.delete(high,0,axis=0)#删除第一行不要的
+#close=np.delete(close,0,axis=0)
+#start=np.delete(start,0,axis=0)
+#ex=np.delete(ex,0,axis=0)
+#vol=np.delete(vol,0,axis=0)
+
+#train_years,test_years (1043, 1) (695, 1)
+#train_data_x,test_data_x (1043, 7) (695, 7)
+#train_data_y,test_data_y (1043, 1) (695, 1)    
+#myplot(test_data_y,test_years)
+#myplot(train_data_y,train_years)
+
+#print('x_7data,y_7data',x_7data.shape,y_7data.shape)
+
+#train_data_x 输入  train_data_y输出
+#train_data_x=imput_x
+
+#n_inputs=1#输入一行有多少个数据
+#max_row=35#输入有多少行
+#batch=train_data_x.shape[0]
+
+#batch=1738
+n_inputs=nn_col#输入一行有多少个数据
+max_row=1#输入有多少行
+lstm_size=100#100个ＬＴＳＭ层　隐藏层单元ＢＬＯＣＫ
+n_classes=1#输出多少个分类
+#batch_size=500 #第一批有多少个样本，
+batch_size=test_data_x.shape[0]#第一批有多少个样本，
+#batch
+n_batch=train_data_x.shape[0]//batch_size
+
+#测试集的
+nnn=test_data_x.shape[0]
+n_batch2=test_data_x.shape[0]//nnn
+
+#n_batch_test=front5_test_input_data.shape[0]//batch_size
+with tf.name_scope('input'):
+    with tf.name_scope('x-input'):
+        x=tf.placeholder(tf.float32,[None,n_inputs])#输入Ｘ是，Ｎ行７列，
+    with tf.name_scope('y-input'):
+        y=tf.placeholder(tf.float32,[None,1])#输出Ｙ是，Ｎ行1 col
+        
+with tf.name_scope('weight'):
+#    100,1
+#(2/Ｎ个输入特征值)　的平方　适合于　relu
+#　１/Ｎ　通用
+#
+    weights=tf.Variable(tf.truncated_normal([lstm_size,n_classes],stddev=0.09))
+#    1是每一个ＣＥＬＬ的输出Ｂ
+with tf.name_scope('biases'):
+    biases=tf.Variable(tf.constant(0.1,shape=[n_classes]))
+
+keep_prob=tf.placeholder(tf.float32)
+###############################ＬＴＳＭ处理###################################
+###############################ＬＴＳＭ处理###################################
+###############################ＬＴＳＭ处理###################################
+###############################ＬＴＳＭ处理###################################
+def RNN(X,weights,biases):
+    
+    
+#    with tf.name_scope('lstm'):
+#        with tf.name_scope('lstm-input'):
+    inputs=tf.reshape(X,[-1,max_row,n_inputs])#n,1,7
+#            lstm_cell=tf.nn.rnn_cell.BasicLSTMCell(lstm_size)
+
+#   定义lstm-cell基本组件 
+#    lstm_cell=tf.nn.rnn_cell.BasicLSTMCell() lstm_size是ＣＥＬＬ中的中间层
+    lstm_cell=tf.nn.rnn_cell.BasicLSTMCell(lstm_size)   
+#    init_state = lstm_cell.zero_state(batch_size, dtype=tf.float32) ,initial_state=init_state
+#    定义lstm的dropout
+    lstm_cell1=tf.nn.rnn_cell.DropoutWrapper(lstm_cell,output_keep_prob=keep_prob)
+    
+    '''将已经堆叠起的LSTM单元转化成动态的可在训练过程中更新的LSTM单元'''
+    outputs,final_state=tf.nn.dynamic_rnn(lstm_cell1,inputs,dtype=tf.float32)
+    '''G(LTSM输出　Ｘ　weights plus b)带激活函数的全连接层''' 
+#    print('output,finalstate=',final_state[-1][1])
+    xw_plus_b=tf.matmul(final_state[1],weights)+biases
+    results=tf.nn.tanh(xw_plus_b)
+            
+    return final_state[1],xw_plus_b,results
+
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+#xunlian=0
+#when xunlian==1 is training    otherwise is test
+
+with tf.name_scope('LSTM'):
+    finelstat,output,prediction=RNN(x,weights,biases)
+    with tf.name_scope('entropy'):
+        
+        error3=(output-y)
+#        error3=tf.nn.sigmoid(output)
+        error_square=np.square(prediction-y)#
+#        error_square=np.square(output-y)
+        loss=tf.reduce_mean(error_square)
+#        loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=y))
+#        tf.summary.scalar('error_square',error_square).
+        tf.summary.scalar('loss',loss)
+    with tf.name_scope('optimizer'):    
+#            train_step=tf.train.GradientDescentOptimizer(0.0001).minimize(loss)
+#            train_step=tf.train.AdamOptimizer(0.00015).minimize(loss)
+            train_step=tf.train.AdamOptimizer(0.00035).minimize(loss)
+'''
+test1,relu rate=0.00025  75%  3000次  AdamOptimizer
+test2,sigmoid rate=0.0025 85% 10000次 AdamOptimizer
+test3,sigmoid rate=0.0025 49% 5000次 GradientDescentOptimizer
+test4,sigmoid rate=0.00025  85.75%  8000次  AdamOptimizer
+test5,relu rate=0.00025  74%  8000次  AdamOptimizer
+test6,sigmoid rate=0.00035 92% 5000次 AdamOptimizer 把训练数据提高到90%多，测试数据才165个
+
+TEST7,我把数据改成前一天的输入Ｘ，结果输出是第二天的Ｙ　sigmoid rate=0.00035 65% ８000次 AdamOptimizer
+
+TEST8,我把数据改成前一天的输入Ｘ，结果输出是第二天的Ｙ　sigmoid rate=0.00035 65% 5000次 AdamOptimizer
+'''
+            
+#GradientDescentOptimizer 
+#AdagradOptimizer 
+#AdagradDAOptimizer 
+#MomentumOptimizer 
+#AdamOptimizer 
+#FtrlOptimizer 
+#RMSPropOptimizer            
+
+with tf.name_scope('accuracy'):        
+    with tf.name_scope('correct'):        
+
+
+        correct_prediction=tf.equal(tf.argmax(y,1),tf.argmax(prediction,1))
+#        correct_prediction=tf.equal(y,prediction)
+        #axis1=row  the max number of y beetwen max nummber of prediction ,isn't equal?
+        #if they has the same value,then correct=1,other wise,correct=0
+
+    with tf.name_scope('acc'):
+        accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
+#        accuracy=tf.reduce_mean(correct_prediction)
+        tf.summary.scalar('accuracy',accuracy)
+merged=tf.summary.merge_all()     
+init=tf.global_variables_initializer()
+saver=tf.train.Saver()#模型保存用
+
+'''
+下面二行代码是开ＧＰＵ，设定为显存占用百分比
+'''
+#gpuConfig = tf.ConfigProto(allow_soft_placement=True)
+#gpuConfig.gpu_options.per_process_gpu_memory_fraction = 0.3
+#config = gpuConfig
+'''
+下面三行代码是关掉ＧＰＵ，开启ＣＰＵ
+'''
+#os.environ['TF_CPP_MIN_LOG_LEVEL']='3' #Disable Tensorflow debugging information
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1' #Set GPU device -1
+
+##################################################################################
+##################################################################################
+##################################################################################
+############################训练############################################
+##################################################################################
+##################################################################################
+##################################################################################
+xunlian=1
+##when xunlian==1 is training    otherwise is test
+if(xunlian==1):
+    perdata=batch_size
+    #somedat=[]
+    #tf.reset_default_graph()
+    with tf.Session() as sess:
+    
+        sess.run(init)
+        
+#        print ddsa   
+        temp11=0 
+        train_writer=tf.summary.FileWriter('E:\\program\\ai\\aifirst\\stock',sess.graph)
+        for epoch in range(2000):
+            icount=0
+            keep_prob=0.1
+            for i in range(n_batch):
+                batch_y=train_data_y[icount:(perdata+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+                batch_x=train_data_x[icount:(perdata+icount):1]#第Ｎ行
+    
+                icount=icount+perdata
+#                print('batch_y',len(batch_y),batch_y,'batch_x',len(batch_x),batch_x)
+                summary,_=sess.run([merged,train_step],feed_dict={x:batch_x,y:batch_y})
+    #            print('prediction=',prediction)
+    #            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+            train_writer.add_summary(summary,epoch)
+            icount=0
+            epoch1=epoch
+            keep_prob=1.0    
+#            print('111111',batch_x[2])
+#            normalization_data(batch_x)
+#            print('222222',batch_x[2])
+#            break
+    #        n_batch2
+            nnn=test_data_x.shape[0]
+    #        for i in range(n_batch2):
+            for i in range(1):
+                batch_y2=test_data_y[icount:(nnn+icount):1]
+                batch_x2=test_data_x[icount:(nnn+icount):1]
+#                batch_y=train_data_y[icount:(perdata+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+#                batch_x=train_data_x[icount:(perdata+icount):1]#第Ｎ行
+                icount=perdata+icount            
+    #            output=预测值
+                finelstat1,output11,loss1,predict1,y11=sess.run([finelstat,output,loss,error3,y],feed_dict={x:batch_x2,y:batch_y2})
+#                finelstat1,output11,loss1,predict1,y11=sess.run([finelstat,output,loss,error3,y],feed_dict={x:batch_x,y:batch_y})
+    #            acc=sess.run(loss,feed_dict={x:batch_x2,y:batch_y2})
+    #            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+    #            train_writer.add_summary(summary,i)
+            if((temp11>len(output11)-3)):
+                temp11=0
+            else:
+                temp11=temp11+1
+            if(epoch %50==0):
+    #            print('测试数据，第',epoch+1,'次loss:=',loss1,'error =',error[0],'prediect:',predict1.shape,predict1)#'error =',b[0]
+                print('测试数据，第',epoch+1,'次predict1_data:=',output11[temp11],'truly_data:=',batch_y[temp11],'substact:=',predict1[temp11],'loss=',loss1)
+                numtemp1=0
+                for i in range(len(output11)-1):
+                    if(output11[i]>0.5):#sigmoid >0.5 ,tanh >0
+                        predict_num=1
+                    else:
+                        predict_num=0
+                        
+                        
+                    if(batch_y[i]==predict_num):
+                        temp_value='\033[32m 预测值 right! \33[0m'
+                        numtemp1=numtemp1+1
+                    else:
+                        temp_value='\033[91m 预测值 wrong! \33[0m'
+                print('\033[32m accuracy \33[0m',numtemp1/len(output11)*100,'%','total',len(output11))     
+    #            print('error',error[1])
+    #        print('finelstat',finelstat[1])
+    #    print('weights:',)
+    #        print(np.load("E:\\program\\ai\\aifirst\\caipiao_b.npy"))
+        saver.save(sess,'stock/stock_modle1')        
+    #１６号，把训练集和测试集分开再测试一下。
+    
+##################################################################################
+##################################################################################
+##################################################################################
+############################测试 测试测试测试测试测试测试测试####################
+##################################################################################
+##################################################################################
+##################################################################################    
+    
+else:
+    
+    perdata=batch_size
+    #somedat=[]
+    #tf.reset_default_graph()
+    with tf.Session() as sess:
+        sess.run(init)
+        saver.restore(sess,'stock/stock_modle1')
+        for epoch in range(1):
+            icount=0
+            epoch1=epoch
+            keep_prob=1.0    
+    #        n_batch2
+            nnn=test_data_x.shape[0]
+            data_colect=1
+            for i in range(1):
+#            for i in range(n_batch):
+                if(data_colect==1):#when data_colect=1,select the test_data  otherwise select the training_data
+                
+#                    batch_y=train_data_y[icount:(perdata+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+#                    batch_x=train_data_x[icount:(perdata+icount):1]#第Ｎ行
+                    
+                    batch_y2=test_data_y[icount:(nnn+icount):1]
+                    batch_x2=test_data_x[icount:(nnn+icount):1]
+                    icount=icount+nnn  
+                    finelstat1,output11,loss1,predict1,y11,prediction2=sess.run([finelstat,output,loss,error3,y,prediction],feed_dict={x:batch_x2,y:batch_y2})
+#                    finelstat,output11,prediction=sess.run(RNN(batch_x2,weights,biases))
+#                    output11=sess.run(tf.matmul(batch_x2,weights)+biases)
+                    
+                else:
+                    batch_y=train_data_y[icount:(perdata+icount):1]#第Ｎ行开始，到第５+Ｎ行结束
+                    batch_x=train_data_x[icount:(perdata+icount):1]#第Ｎ行
+#                    icount=icount+nnn                       
+#                    finelstat1,output11,loss1,predict1,y11=sess.run([finelstat,output,loss,error3,y],feed_dict={x:batch_x,y:batch_y})
+
+    #            acc=sess.run(loss,feed_dict={x:batch_x2,y:batch_y2})
+    #            summary,_=sess.run([merged,accuracy],feed_dict={x:batch_x2,y:batch_y2})
+    #            train_writer.add_summary(summary,i)
+            tes=1
+            if(tes):
+    #            print('测试数据，第',epoch+1,'次loss:=',loss1,'error =',error[0],'prediect:',predict1.shape,predict1)#'error =',b[0]
+    #            print('测试数据，第',epoch+1,'次predict1:=',output11,'acctaily:=',y11,'substact:=',predict1[1],'loss=',loss1)
+    #            print(len(output11))
+                numtemp1=0
+                for i in range(len(output11)-1):
+                    if(output11[i]>0.5):#sigmoid >0.5 ,tanh >0
+                        predict_num=1
+                    else:
+                        predict_num=0
+                        
+                        
+                    if(batch_y2[i]==predict_num):
+                        temp_value='\033[32m 预测值 right!'
+                        numtemp1=numtemp1+1
+                    else:
+                        temp_value='\033[31m 预测值 wrong! '
+                        
+                    print('\033[34m number:',stock_num,i,'\033[32m 实际值:',batch_y2[i],temp_value,output11[i],predict1[i],test_years[i])          
+                print('\033[32m accuracy',numtemp1/len(output11)*100,'%')
+print('\033[32m total',len(output11))                
+#                plt.scatter(output11,output11**2+0.01)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
