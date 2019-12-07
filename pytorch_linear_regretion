@@ -1,0 +1,62 @@
+import numpy as np
+import torch
+from torch.autograd import Variable
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
+
+#import torch.autograd.Variable
+print('My gpu state is:',torch.cuda.is_available())
+print('My gpu ID=',torch.cuda.current_device())
+print('My gpu name=',torch.cuda.get_device_name(0))
+print('My gpu usage=',torch.cuda.memory_allocated())
+print('My gpu cached=',torch.cuda.memory_cached())
+
+
+#simple net　下面是一个线性拟合程序 并且开启了GPU
+
+x=torch.unsqueeze(torch.linspace(-1,1,100),dim=1)
+y=x.pow(2)+0.2*torch.rand(x.size())
+x,y=Variable(x).cuda(),Variable(y).cuda()
+#x,y=Variable(x),Variable(y)
+print('x,y,shape:',x,y)
+#plt.scatter(x.data.numpy(),y.data.numpy())
+#plt.show()
+
+class Net(torch.nn.Module):
+    def __init__(self,n_features,n_hidden,n_output):
+        super(Net,self).__init__()
+        self.hidden=torch.nn.Linear(n_features,n_hidden)
+        self.predict=torch.nn.Linear(n_hidden,n_output)
+    
+    def forward(self,x):
+        x=F.relu(self.hidden(x))
+        x=self.predict(x)
+        return x
+
+
+
+net=Net(1,10,1).cuda()
+print('the net is :',net)
+
+optimizer=torch.optim.SGD(net.parameters(),lr=0.3)
+loss_func=torch.nn.MSELoss()
+
+plt.ion()   # something about plotting
+plt.show()
+for i in range(300):
+    prediction=net(x)
+    loss=loss_func(prediction,y)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    
+    if i % 20 == 0:
+        plt.cla()
+        plt.scatter(x.cuda().data.cpu().numpy(), y.cuda().data.cpu().numpy())
+        plt.plot(x.cuda().data.cpu().numpy(), prediction.cuda().data.cpu().numpy(), 'r-', lw=5)
+        plt.text(0.5, 0, 'Loss=%.4f' % loss.cuda().data.cpu().numpy(), fontdict={'size': 20, 'color':  'red'})
+        plt.pause(0.1)
+        plt.show()#this is every 20 step,view the data fit sitation.
+
+plt.ioff()
+plt.show()
