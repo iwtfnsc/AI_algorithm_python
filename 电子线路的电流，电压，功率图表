@@ -90,3 +90,34 @@ plt.ylabel('v-out')
 plt.legend(lable)
 plt.title('voltage with the rdown change ')
 plt.grid()
+
+
+
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 21 10:20:56 2021
+USB线材阻抗计算
+@author: vmars
+平行导线的特征阻抗
+z0 = 276 log10 2s/d   s=导体中心距  D=导体的直径
+同轴电线的特征阻抗
+Z0 = 138 log10 (b/a)  b=外导体的内径  A=内导体的外径
+"""
+
+#-*- coding: utf-8 -*-
+import matplotlib.pyplot as plt#显示２Ｄ画图
+import os
+import numpy as np
+from numpy import poly1d
+import math as ma
+#coding: utf-8
+
+"""s=导体中心距  D=导体的直径 因为线材厂做线时是多根线接在一起的，dNUM=多少根线，DD=线径"""
+dnum=7
+dd=0.17
+d = dnum * dd
+#s=d
+s=1.27 
+zo = 276 * ma.log10 (2*s/d)
+#print('此线的特性阻抗是：'zo)
+print(zo)
