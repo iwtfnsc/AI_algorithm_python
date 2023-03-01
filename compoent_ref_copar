@@ -1,0 +1,166 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct  9 11:04:44 2022
+作用是用来对比两个ＥＸＣＥＬＬ的两列有什么不同，主要对比位号
+excel.xlsx
+first column= FLM system import
+second column = ORCAD import
+@author: tuzhiquan@126.com
+"""
+
+from openpyxl.styles import  PatternFill
+from  openpyxl import load_workbook
+from openpyxl import Workbook
+#from openpyxl.style import Color, Fill
+#import datetime
+#now=datetime.datetime.now()
+#
+#nowdate=now.strftime('%x')
+# 创建workbook对象，写入模式
+wb = Workbook()
+
+sheetName="sheet2"
+ws = wb.create_sheet(sheetName)#esdiblish a sheet
+#row1 = ["A1","A2","A3","A4","A5","A6"]
+
+wb = load_workbook(r'E:\myproject\RK3588\RS119V1423\bom.xlsx')
+ws=wb.get_sheet_by_name('Sheet1')#读入表的数据,此数据是每一个SHEET的名称
+
+set_row_num=ws.max_row
+print("此ＢＯＭ一共有多少行：=",set_row_num)
+
+outfile="  21421 "
+
+#keyword1="+/-5%"
+a=0
+b=0
+c=0
+d=0
+temp1=0
+temp2=8
+temp3=0
+lflag=0
+firstrow=1
+com_value=0
+temp_point=0
+allref=[]
+allref2=[]
+othoerref=[]
+
+refcolums=ws.columns
+refcolums=tuple(refcolums)
+# print('how many columns==',len(refcolums))#how many columns?
+
+for idx in range(0,1):# 第一列 系统ＢＯＭ
+    for i in refcolums[idx]:
+        b=b+1
+        # print('row',b,'+',i,'==',i.value)
+        if(i.value):
+            # 此处是把每一个位号分出来，有时分不出来，需要手工来调
+            # allref.extend(str(i.value).split('，'))
+            allref.extend(str(i.value).split(','))
+# print(allref) 
+# # ###############显示所有分开过的位号图########################
+# for i in allref:
+#     c=c+1
+#     print('位号',c,'==',i)
+# #######################################################################
+
+
+for idx in range(1,2):# 第2列 ＯＲＣＡＤ导出ＢＯＭ
+    for i in refcolums[idx]:
+        b=b+1
+        # print('row',b,'+',i,'==',i.value)
+        if(i.value):
+            # 此处是把每一个位号分出来，有时分不出来，需要手工来调
+            # allref2.extend(str(i.value).split('，'))
+            allref2.extend(str(i.value).split(','))
+
+        
+# # ###############显示所有分开过的位号图########################
+
+    # print('位号',c,'==',i)
+# # ####################################################################### 
+
+# print(allref)
+
+# # # ###############显示所有 分不开 的位号图１########################
+# for i in allref:
+    
+#     c=c+1
+#     if(len(i)>0):#如果长度超过８，就代表有几个位号在一起，没分出来
+#         print('Ａ位号',c,'==',i)
+# # #######################################################################
+
+# for i in allref:
+#     print('Ａ位号',c,'==',i)
+
+# # # ###############显示所有 分不开 的位号图２########################
+# for i in allref2:
+#     c=c+1
+#     if(len(i)>8):#如果长度超过８，就代表有几个位号在一起，没分出来
+#         print('Ｂ位号',c,'==',i)
+# # # #######################################################################
+
+
+
+######################################################################
+######excel第一列中的一个位号和第二列中的位号进行对比，找出不同点显示出来＃＃＃
+#######################################################################
+    # print('allref',allref)
+# print('allref2',allref2)
+# for i in allref2:
+for i in allref2:
+    # c=c+1
+    if (i in allref):
+        pass
+        # print('allref','中有',i)
+    else:
+        print('PLM系统BOM中也就是第一行','没有',i)
+        
+        
+for i in allref:
+
+    if (i in allref2):
+        pass
+        # print('allref','中有',i)
+    else:
+        print('orcad导出BOM中','没有',i)        
+#######################################################################
+
+
+
+
+       
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
